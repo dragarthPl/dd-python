@@ -1,0 +1,128 @@
+[tool.poetry]
+name = "domaindrivers"
+version = "0.0.1"
+description = ""
+authors = ["Marcin Goncerzewicz <marcingoncerzewicz@gmail.com>"]
+readme = "README.md"
+
+packages = [
+    { include = "src"},
+    { include = "src/main" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+attrs = "^24.2.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+pytest = "^8.3.3"
+pytestarch = "^3.1.1"
+mypy = "^1.12.0"
+ruff = "^0.6.9"
+isort = "5.13.2"
+pre-commit = "4.0.1"
+testcontainers = {extras = ["postgres"], version = "^4.8.2"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.autoflake]
+check = true
+remove_all_unused_imports = true
+
+[tool.isort]
+line_length = 120
+multi_line_output = 3
+force_alphabetical_sort_within_sections = true
+profile = "black"
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
+skip-string-normalization = true
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src",
+    "src/main",
+]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+no_strict_optional = true
+implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+scripts_are_modules = true
+explicit_package_bases = false
+no_namespace_packages = true
+pretty = true
+strict = true
+mypy_path = ["src/main/domaindrivers/", "src/test/"]
+
+[tool.ruff]
+src = ["src/main",]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+line-length = 120
+indent-width = 4
+
+target-version = "py312"
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
