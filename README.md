@@ -20,5 +20,3 @@
 ## Running the mypy
 
 1. Run `poetry run mypy .` in the main folder.
-
-
