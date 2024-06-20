@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from src.main.domaindrivers.smartschedule.sorter.feedback_arc_se_on_graph import Edge, FeedbackArcSeOnGraph
-from src.main.domaindrivers.smartschedule.sorter.node import Node
+from domaindrivers.smartschedule.sorter.feedback_arc_se_on_graph import Edge, FeedbackArcSeOnGraph
+from domaindrivers.smartschedule.sorter.node import Node
 
 
 class TestFeedbackArcSetOnGraph(TestCase):

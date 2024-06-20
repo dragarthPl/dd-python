@@ -1,10 +1,10 @@
 from typing import Final
 from unittest import TestCase
 
-from src.main.domaindrivers.smartschedule.sorter.graph_topological_sort import GraphTopologicalSort
-from src.main.domaindrivers.smartschedule.sorter.node import Node
-from src.main.domaindrivers.smartschedule.sorter.nodes import Nodes
-from src.main.domaindrivers.smartschedule.sorter.sorted_nodes import SortedNodes
+from domaindrivers.smartschedule.sorter.graph_topological_sort import GraphTopologicalSort
+from domaindrivers.smartschedule.sorter.node import Node
+from domaindrivers.smartschedule.sorter.nodes import Nodes
+from domaindrivers.smartschedule.sorter.sorted_nodes import SortedNodes
 
 
 class TestGraphTopologicalSort(TestCase):

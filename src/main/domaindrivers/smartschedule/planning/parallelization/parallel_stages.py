@@ -1,6 +1,5 @@
 from attrs import frozen
-
-from src.main.domaindrivers.smartschedule.planning.parallelization.stage import Stage
+from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 
 
 @frozen

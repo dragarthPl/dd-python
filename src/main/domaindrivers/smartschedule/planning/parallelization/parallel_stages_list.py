@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from attrs import frozen
-
-from src.main.domaindrivers.smartschedule.planning.parallelization.parallel_stages import ParallelStages
+from domaindrivers.smartschedule.planning.parallelization.parallel_stages import ParallelStages
 
 
 @frozen
