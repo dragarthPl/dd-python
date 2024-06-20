@@ -4,7 +4,7 @@ from domaindrivers.smartschedule.sorter.node import Node
 
 class FeedbackArcSeOnGraph:
     @classmethod
-    def calculate(cls, initial_nodes: list["Node"]) -> list["Edge"]:
+    def calculate(cls, initial_nodes: list["Node[str]"]) -> list["Edge"]:
         adjacency_list: dict[int, list[int]] = cls.__create_adjacency_list(initial_nodes)
         v: int = len(adjacency_list)
         feedback_edges: list[Edge] = []
@@ -22,7 +22,7 @@ class FeedbackArcSeOnGraph:
         return feedback_edges
 
     @staticmethod
-    def __create_adjacency_list(initial_nodes: list["Node"]) -> dict[int, list[int]]:
+    def __create_adjacency_list(initial_nodes: list["Node[str]"]) -> dict[int, list[int]]:
         adjacency_list: dict[int, list[int]] = {}
         for i, node in enumerate(initial_nodes):
             adjacency_list[i + 1] = []

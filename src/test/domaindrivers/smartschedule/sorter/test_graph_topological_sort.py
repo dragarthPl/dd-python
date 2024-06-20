@@ -8,26 +8,26 @@ from domaindrivers.smartschedule.sorter.sorted_nodes import SortedNodes
 
 
 class TestGraphTopologicalSort(TestCase):
-    GRAPH_TOPOLOGICAL_SORT: Final[GraphTopologicalSort] = GraphTopologicalSort()
+    GRAPH_TOPOLOGICAL_SORT: Final[GraphTopologicalSort[str]] = GraphTopologicalSort()
 
     def test_topological_sort_with_simple_dependencies(self) -> None:
         # given
 
-        node1: Node = Node.from_name("Node1")
+        node1: Node[str] = Node.from_name("Node1")
 
-        node2: Node = Node.from_name("Node2")
+        node2: Node[str] = Node.from_name("Node2")
 
-        node3: Node = Node.from_name("Node3")
+        node3: Node[str] = Node.from_name("Node3")
 
-        node4: Node = Node.from_name("Node4")
+        node4: Node[str] = Node.from_name("Node4")
         node2 = node2.depends_on(node1)
         node3 = node3.depends_on(node1)
         node4 = node4.depends_on(node2)
 
-        nodes: Nodes = Nodes({node1, node2, node3, node4})
+        nodes: Nodes[str] = Nodes({node1, node2, node3, node4})
 
         # when
-        sorted_nodes: SortedNodes = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertEqual(3, len(sorted_nodes.all))
@@ -44,20 +44,20 @@ class TestGraphTopologicalSort(TestCase):
 
     def test_topological_sort_with_linear_dependencies(self) -> None:
         # given
-        node1: Node = Node.from_name("Node1")
-        node2: Node = Node.from_name("Node2")
-        node3: Node = Node.from_name("Node3")
-        node4: Node = Node.from_name("Node4")
-        node5: Node = Node.from_name("Node5")
+        node1: Node[str] = Node.from_name("Node1")
+        node2: Node[str] = Node.from_name("Node2")
+        node3: Node[str] = Node.from_name("Node3")
+        node4: Node[str] = Node.from_name("Node4")
+        node5: Node[str] = Node.from_name("Node5")
         node1 = node1.depends_on(node2)
         node2 = node2.depends_on(node3)
         node3 = node3.depends_on(node4)
         node4 = node4.depends_on(node5)
 
-        nodes: Nodes = Nodes({node1, node2, node3, node4, node5})
+        nodes: Nodes[str] = Nodes({node1, node2, node3, node4, node5})
 
         # when
-        sorted_nodes: SortedNodes = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertEqual(5, len(sorted_nodes.all))
@@ -79,26 +79,26 @@ class TestGraphTopologicalSort(TestCase):
 
     def test_nodes_without_dependencies(self) -> None:
         # given
-        node1: Node = Node.from_name("Node1")
-        node2: Node = Node.from_name("Node2")
-        nodes: Nodes = Nodes({node1, node2})
+        node1: Node[str] = Node.from_name("Node1")
+        node2: Node[str] = Node.from_name("Node2")
+        nodes: Nodes[str] = Nodes({node1, node2})
 
         # when
-        sorted_nodes: SortedNodes = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertEqual(1, len(sorted_nodes.all))
 
     def test_cyclic_dependency(self) -> None:
         # given
-        node1: Node = Node.from_name("Node1")
-        node2: Node = Node.from_name("Node2")
+        node1: Node[str] = Node.from_name("Node1")
+        node2: Node[str] = Node.from_name("Node2")
         node2 = node2.depends_on(node1)
         node1 = node1.depends_on(node2)  # making it cyclic
-        nodes: Nodes = Nodes({node1, node2})
+        nodes: Nodes[str] = Nodes({node1, node2})
 
         # when
-        sorted_nodes: SortedNodes = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertTrue(sorted_nodes.all == [])

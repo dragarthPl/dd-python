@@ -11,7 +11,7 @@ from domaindrivers.smartschedule.sorter.sorted_nodes import SortedNodes
 
 class StageParallelization:
     def of(self, stages: set[Stage]) -> ParallelStagesList:
-        nodes: Nodes = StagesToNodes().calculate(list(stages))
+        nodes: Nodes[Stage] = StagesToNodes().calculate(list(stages))
 
-        sorted_nodes: SortedNodes = GraphTopologicalSort().sort(nodes)
+        sorted_nodes: SortedNodes[Stage] = GraphTopologicalSort[Stage]().sort(nodes)
         return SortedNodesToParallelizedStages().calculate(sorted_nodes)

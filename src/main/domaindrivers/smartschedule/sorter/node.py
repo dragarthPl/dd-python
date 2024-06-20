@@ -1,26 +1,27 @@
 import hashlib
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from attrs import frozen
-from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.sorter.nodes import Nodes
+
+T = TypeVar("T")
 
 
 @frozen
-class Node:
+class Node(Generic[T]):
     name: str
-    dependencies: Nodes
-    content: Stage | None
+    dependencies: Nodes[T]
+    content: T | None
 
     @classmethod
-    def from_name(cls, name: str) -> "Node":
+    def from_name(cls, name: str) -> "Node[T]":
         return cls(name, Nodes(set()), None)
 
     @classmethod
-    def from_name_stage(cls, name: str, content: Stage) -> "Node":
+    def from_name_stage(cls, name: str, content: T) -> "Node[T]":
         return cls(name, Nodes(set()), content)
 
-    def depends_on(self, node: "Node") -> "Node":
+    def depends_on(self, node: "Node[T]") -> "Node[T]":
         return Node(self.name, self.dependencies.add(node), self.content)
 
     def __str__(self) -> str:
