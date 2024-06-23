@@ -22,8 +22,6 @@ class ArchitectureDependencyTest(TestCase):
             .containing_modules("domaindrivers.smartschedule.planning.parallelization")
             .layer("sorter")
             .containing_modules("domaindrivers.smartschedule.sorter")
-            .layer("utils")
-            .containing_modules("domaindrivers.utils")
         )
 
         rules = [
@@ -34,17 +32,9 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("parallelization")
                 .should_only()
                 .access_layers_that()
-                .are_named(["sorter", "utils"])
-            ),
-            (
-                LayerRule()
-                .based_on(architecture)
-                .layers_that()
                 .are_named("sorter")
-                .should_only()
-                .access_layers_that()
-                .are_named(["utils"])
             ),
+            (LayerRule().based_on(architecture).layers_that().are_named("sorter").should_not().access_any_layer()),
         ]
 
         for rule in rules:

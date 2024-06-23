@@ -27,7 +27,7 @@ class TestGraphTopologicalSort(TestCase):
         nodes: Nodes[str] = Nodes({node1, node2, node3, node4})
 
         # when
-        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.apply(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertEqual(3, len(sorted_nodes.all))
@@ -57,7 +57,7 @@ class TestGraphTopologicalSort(TestCase):
         nodes: Nodes[str] = Nodes({node1, node2, node3, node4, node5})
 
         # when
-        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.apply(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertEqual(5, len(sorted_nodes.all))
@@ -84,7 +84,7 @@ class TestGraphTopologicalSort(TestCase):
         nodes: Nodes[str] = Nodes({node1, node2})
 
         # when
-        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.apply(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertEqual(1, len(sorted_nodes.all))
@@ -98,7 +98,7 @@ class TestGraphTopologicalSort(TestCase):
         nodes: Nodes[str] = Nodes({node1, node2})
 
         # when
-        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.apply(nodes)
+        sorted_nodes: SortedNodes[str] = self.GRAPH_TOPOLOGICAL_SORT.sort(nodes)
 
         # then
         self.assertTrue(sorted_nodes.all == [])
