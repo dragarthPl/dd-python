@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
 from domaindrivers.smartschedule.planning.parallelization.sorted_nodes_to_parallelized_stages import (
     SortedNodesToParallelizedStages,
@@ -10,22 +8,10 @@ from domaindrivers.smartschedule.sorter.graph_topological_sort import GraphTopol
 from domaindrivers.smartschedule.sorter.nodes import Nodes
 from domaindrivers.smartschedule.sorter.sorted_nodes import SortedNodes
 
-if TYPE_CHECKING:
-    from src.main.domaindrivers.utils.functional import Function
-else:
-    from domaindrivers.utils.functional import Function
-
 
 class StageParallelization:
-    __CREATE_NODES = Function[list[Stage], Nodes[Stage]](lambda stages: StagesToNodes().apply(stages))
-    __GRAPH_SORT = Function[Nodes[Stage], SortedNodes[Stage]](lambda nodes: GraphTopologicalSort[Stage]().apply(nodes))
-    __PARALLELIZE = Function[SortedNodes[Stage], ParallelStagesList](
-        lambda nodes: SortedNodesToParallelizedStages().apply(nodes)
-    )
-
-    __WORKFLOW = Function[list[Stage], ParallelStagesList](
-        __CREATE_NODES.and_then(__GRAPH_SORT).and_then(__PARALLELIZE)
-    )
-
     def of(self, stages: set[Stage]) -> ParallelStagesList:
-        return self.__WORKFLOW.apply(list(stages))
+        nodes: Nodes[Stage] = StagesToNodes().calculate(list(stages))
+
+        sorted_nodes: SortedNodes[Stage] = GraphTopologicalSort[Stage]().sort(nodes)
+        return SortedNodesToParallelizedStages().calculate(sorted_nodes)
