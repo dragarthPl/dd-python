@@ -1,10 +1,11 @@
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.sorter.node import Node
 from domaindrivers.smartschedule.sorter.nodes import Nodes
+from domaindrivers.utils.functional import Function
 
 
-class StagesToNodes:
-    def calculate(self, stages: list[Stage]) -> Nodes[Stage]:
+class StagesToNodes(Function[list[Stage], Nodes[Stage]]):
+    def apply(self, stages: list[Stage]) -> Nodes[Stage]:
         result: dict[str, Node[Stage]] = {stage.name: Node.from_name_stage(stage.name, stage) for stage in stages}
 
         for i, stage in enumerate(stages):
