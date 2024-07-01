@@ -13,6 +13,9 @@ class SimulatedProject:
     earnings: Decimal
     missing_demands: Demands
 
+    def all_demands_satisfied(self) -> bool:
+        return not self.missing_demands.all
+
     def __eq__(self, other: Any) -> bool:
         if other is None or not isinstance(other, SimulatedProject):
             return False
