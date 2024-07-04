@@ -26,6 +26,10 @@ class ArchitectureDependencyTest(TestCase):
             .containing_modules("domaindrivers.smartschedule.simulation")
             .layer("utils")
             .containing_modules("domaindrivers.utils")
+            .layer("optimization")
+            .containing_modules("domaindrivers.smartschedule.optimization")
+            .layer("shared")
+            .containing_modules("domaindrivers.smartschedule.shared")
         )
 
         rules = [
@@ -46,7 +50,7 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("simulation")
                 .should_only()
                 .access_layers_that()
-                .are_named("utils")
+                .are_named(["utils", "optimization", "shared"])
             ),
         ]
 

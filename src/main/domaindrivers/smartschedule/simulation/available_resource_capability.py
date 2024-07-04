@@ -1,12 +1,13 @@
 from uuid import UUID
 
 from attrs import frozen
+from domaindrivers.smartschedule.optimization.capacity_dimension import CapacityDimension
+from domaindrivers.smartschedule.shared.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.capability import Capability
-from domaindrivers.smartschedule.simulation.time_slot import TimeSlot
 
 
 @frozen
-class AvailableResourceCapability:
+class AvailableResourceCapability(CapacityDimension):
     resource_id: UUID
     capability: Capability
     time_slot: TimeSlot
