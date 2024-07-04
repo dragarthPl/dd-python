@@ -1,9 +1,9 @@
 from uuid import UUID
 
+from domaindrivers.smartschedule.shared.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.available_resource_capability import AvailableResourceCapability
 from domaindrivers.smartschedule.simulation.capability import Capability
 from domaindrivers.smartschedule.simulation.simulated_capabilities import SimulatedCapabilities
-from domaindrivers.smartschedule.simulation.time_slot import TimeSlot
 
 
 class AvailableCapabilitiesBuilder:

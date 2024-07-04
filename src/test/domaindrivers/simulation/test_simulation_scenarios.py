@@ -3,15 +3,16 @@ from decimal import Decimal
 from unittest import TestCase
 from uuid import UUID
 
+from domaindrivers.smartschedule.optimization.optimization_facade import OptimizationFacade
+from domaindrivers.smartschedule.optimization.result import Result
+from domaindrivers.smartschedule.shared.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.available_resource_capability import AvailableResourceCapability
 from domaindrivers.smartschedule.simulation.capability import Capability
 from domaindrivers.smartschedule.simulation.demand import Demand
 from domaindrivers.smartschedule.simulation.project_id import ProjectId
-from domaindrivers.smartschedule.simulation.result import Result
 from domaindrivers.smartschedule.simulation.simulated_capabilities import SimulatedCapabilities
 from domaindrivers.smartschedule.simulation.simulated_project import SimulatedProject
 from domaindrivers.smartschedule.simulation.simulation_facade import SimulationFacade
-from domaindrivers.smartschedule.simulation.time_slot import TimeSlot
 
 from .available_capabilities_builder import AvailableCapabilitiesBuilder
 from .simulated_projects_builder import SimulatedProjectsBuilder
@@ -25,7 +26,7 @@ class TestSimulationScenarios(TestCase):
     STASZEK: UUID = uuid.uuid4()
     LEON: UUID = uuid.uuid4()
 
-    simulation_facade: SimulationFacade = SimulationFacade()
+    simulation_facade: SimulationFacade = SimulationFacade(OptimizationFacade())
 
     def test_picks_optimal_project_based_on_earnings(self) -> None:
         # given
@@ -64,7 +65,7 @@ class TestSimulationScenarios(TestCase):
 
         # then
         self.assertEqual(108.0, result.profit)
-        self.assertEqual(2, len(result.chosen_projects))
+        self.assertEqual(2, len(result.chosen_items))
 
     def test_picks_all_when_enough_capabilities(self) -> None:
         # given
@@ -97,7 +98,7 @@ class TestSimulationScenarios(TestCase):
 
         # then
         self.assertEqual(99.0, result.profit)
-        self.assertEqual(1, len(result.chosen_projects))
+        self.assertEqual(1, len(result.chosen_items))
 
     def test_can_simulate_having_extra_resources(self) -> None:
         # given
