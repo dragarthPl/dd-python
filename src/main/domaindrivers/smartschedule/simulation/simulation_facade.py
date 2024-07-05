@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any, cast
 
 from domaindrivers.smartschedule.optimization.capacity_dimension import CapacityDimension
@@ -7,6 +8,7 @@ from domaindrivers.smartschedule.optimization.result import Result
 from domaindrivers.smartschedule.optimization.total_capacity import TotalCapacity
 from domaindrivers.smartschedule.optimization.total_weight import TotalWeight
 from domaindrivers.smartschedule.optimization.weight_dimension import WeightDimension
+from domaindrivers.smartschedule.simulation.additional_priced_capability import AdditionalPricedCapability
 from domaindrivers.smartschedule.simulation.available_resource_capability import AvailableResourceCapability
 from domaindrivers.smartschedule.simulation.demand import Demand
 from domaindrivers.smartschedule.simulation.simulated_capabilities import SimulatedCapabilities
@@ -18,6 +20,30 @@ class SimulationFacade:
 
     def __init__(self, optimization_facade: OptimizationFacade) -> None:
         self.__optimization_facade = optimization_facade
+
+    def profit_after_buying_new_capability(
+        self,
+        projects_simulations: list[SimulatedProject],
+        capabilities_without_new_one: SimulatedCapabilities,
+        new_priced_capability: AdditionalPricedCapability,
+    ) -> float:
+        capabilities_with_new_resource: SimulatedCapabilities = capabilities_without_new_one.add(
+            new_priced_capability.available_resource_capability
+        )
+
+        def comparator(x: Item, y: Item) -> int:
+            return int(y.value - x.value)
+
+        result_without: Result = self.__optimization_facade.calculate_with_comparator(
+            self.__to_items(projects_simulations), self.__to_capacity(capabilities_without_new_one), comparator
+        )
+        result_with: Result = self.__optimization_facade.calculate_with_comparator(
+            self.__to_items(projects_simulations), self.__to_capacity(capabilities_with_new_resource), comparator
+        )
+        return float(
+            (Decimal.from_float(result_with.profit) - new_priced_capability.value)
+            - Decimal.from_float(result_without.profit)
+        )
 
     def which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
         self,

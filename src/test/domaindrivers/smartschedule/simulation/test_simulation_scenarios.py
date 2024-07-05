@@ -6,6 +6,7 @@ from uuid import UUID
 from domaindrivers.smartschedule.optimization.optimization_facade import OptimizationFacade
 from domaindrivers.smartschedule.optimization.result import Result
 from domaindrivers.smartschedule.shared.time_slot import TimeSlot
+from domaindrivers.smartschedule.simulation.additional_priced_capability import AdditionalPricedCapability
 from domaindrivers.smartschedule.simulation.available_resource_capability import AvailableResourceCapability
 from domaindrivers.smartschedule.simulation.capability import Capability
 from domaindrivers.smartschedule.simulation.demand import Demand
@@ -174,6 +175,48 @@ class TestSimulationScenarios(TestCase):
 
         # then
         self.assertEqual(str(self.PROJECT_1), result.chosen_items[0].name)
+
+    def test_check_if_it_pays_off_to_pay_for_capability(self) -> None:
+        # given
+        simulated_projects: list[SimulatedProject] = (
+            self.simulated_projects()
+            .with_project(self.PROJECT_1)
+            .that_requires(Demand.demand_for(Capability.skill("JAVA-MID"), self.JAN_1))
+            .that_can_earn(Decimal(100))
+            .with_project(self.PROJECT_2)
+            .that_requires(Demand.demand_for(Capability.skill("JAVA-MID"), self.JAN_1))
+            .that_can_earn(Decimal(40))
+            .build()
+        )
+
+        # and there are
+        simulated_availability: SimulatedCapabilities = (
+            self.simulated_capabilities()
+            .with_employee(self.STASZEK)
+            .that_brings(Capability.skill("JAVA-MID"))
+            .that_is_available_at(self.JAN_1)
+            .build()
+        )
+
+        # and there are
+        slawek: AdditionalPricedCapability = AdditionalPricedCapability(
+            Decimal(9999), AvailableResourceCapability(uuid.uuid4(), Capability.skill("JAVA-MID"), self.JAN_1)
+        )
+        staszek: AdditionalPricedCapability = AdditionalPricedCapability(
+            Decimal(3), AvailableResourceCapability(uuid.uuid4(), Capability.skill("JAVA-MID"), self.JAN_1)
+        )
+
+        # when
+        buying_slawek: float = self.simulation_facade.profit_after_buying_new_capability(
+            simulated_projects, simulated_availability, slawek
+        )
+        buying_staszek: float = self.simulation_facade.profit_after_buying_new_capability(
+            simulated_projects, simulated_availability, staszek
+        )
+
+        # then
+        self.assertEqual(Decimal(-9959), buying_slawek)  # we pay 9999 and get the project for 40
+        self.assertEqual(Decimal(37), buying_staszek)  # we pay 3 and get the project for 40
 
     def simulated_projects(self) -> SimulatedProjectsBuilder:
         return SimulatedProjectsBuilder()
