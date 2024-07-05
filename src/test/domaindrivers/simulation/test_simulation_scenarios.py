@@ -143,6 +143,38 @@ class TestSimulationScenarios(TestCase):
         self.assertEqual(99.0, result_without_extra_resource.profit)
         self.assertEqual(108.0, result_with_extra_resource.profit)
 
+    def test_picks_optimal_project_based_on_reputation(self) -> None:
+        # given
+        simulated_projects: list[SimulatedProject] = (
+            self.simulated_projects()
+            .with_project(self.PROJECT_1)
+            .that_requires(Demand.demand_for(Capability.skill("JAVA-MID"), self.JAN_1))
+            .that_can_generate_reputation_loss(100)
+            .with_project(self.PROJECT_2)
+            .that_requires(Demand.demand_for(Capability.skill("JAVA-MID"), self.JAN_1))
+            .that_can_generate_reputation_loss(40)
+            .build()
+        )
+
+        # and there are
+        simulated_availability: SimulatedCapabilities = (
+            self.simulated_capabilities()
+            .with_employee(self.STASZEK)
+            .that_brings(Capability.skill("JAVA-MID"))
+            .that_is_available_at(self.JAN_1)
+            .build()
+        )
+
+        # when
+        result: Result = (
+            self.simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
+                simulated_projects, simulated_availability
+            )
+        )
+
+        # then
+        self.assertEqual(str(self.PROJECT_1), result.chosen_items[0].name)
+
     def simulated_projects(self) -> SimulatedProjectsBuilder:
         return SimulatedProjectsBuilder()
 

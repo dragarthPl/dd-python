@@ -1,3 +1,6 @@
+import functools
+from typing import Callable
+
 from domaindrivers.smartschedule.optimization.capacity_dimension import CapacityDimension
 from domaindrivers.smartschedule.optimization.item import Item
 from domaindrivers.smartschedule.optimization.result import Result
@@ -7,6 +10,14 @@ from domaindrivers.smartschedule.optimization.total_weight import TotalWeight
 
 class OptimizationFacade:
     def calculate(self, items: list[Item], total_capacity: TotalCapacity) -> Result:
+        def comparator(x: Item, y: Item) -> int:
+            return int(y.value - x.value)
+
+        return self.calculate_with_comparator(items, total_capacity, comparator)
+
+    def calculate_with_comparator(
+        self, items: list[Item], total_capacity: TotalCapacity, comparator: Callable[[Item, Item], int]
+    ) -> Result:
         capacities_size: int = total_capacity.size()
         dp: list[float] = [0.0 for _ in range(capacities_size + 1)]
         chosen_items_list: list[list[Item]] = []
@@ -22,7 +33,7 @@ class OptimizationFacade:
         all_capacities: list[CapacityDimension] = total_capacity.capacities
         item_to_capacities_map: dict[Item, set[CapacityDimension]] = {}
 
-        for item in sorted(items, key=lambda x: x.value, reverse=True):
+        for item in sorted(items, key=functools.cmp_to_key(comparator)):
             chosen_capacities: list[CapacityDimension] = self.__match_capacities(item.total_weight, all_capacities)
             all_capacities = list(filter(lambda a: a not in chosen_capacities, all_capacities))
 
