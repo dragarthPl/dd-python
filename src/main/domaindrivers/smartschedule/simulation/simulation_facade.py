@@ -39,4 +39,4 @@ class SimulationFacade:
     def __to_item(self, simulated_project: SimulatedProject) -> Item:
         missing_demands: list[Demand] = simulated_project.missing_demands.all
         weights: list[WeightDimension[Any]] = cast(list[WeightDimension[Any]], missing_demands.copy())
-        return Item(str(simulated_project.project_id), float(simulated_project.earnings), TotalWeight(weights))
+        return Item(str(simulated_project.project_id), float(simulated_project.calculate_value()), TotalWeight(weights))
