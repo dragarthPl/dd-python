@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from src.main.domaindrivers.smartschedule.optimization.weight_dimension import WeightDimension
 else:
     from domaindrivers.smartschedule.optimization.weight_dimension import WeightDimension
-from domaindrivers.smartschedule.shared.time_slot import TimeSlot
+from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 @frozen

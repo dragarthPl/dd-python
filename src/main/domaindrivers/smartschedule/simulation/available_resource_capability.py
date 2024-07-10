@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 else:
     from domaindrivers.smartschedule.optimization.capacity_dimension import CapacityDimension
 
-from domaindrivers.smartschedule.shared.time_slot import TimeSlot
-from domaindrivers.smartschedule.simulation.capability import Capability
+from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 @frozen

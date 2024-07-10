@@ -18,5 +18,9 @@ class ProjectId(Serializable):  # type: ignore
     def __init__(self, project_id: UUID):
         self.__project_id = project_id
 
+    @classmethod
+    def from_key(cls, key: UUID) -> "ProjectId":
+        return cls(key)
+
     def id(self) -> UUID:
         return self.__project_id

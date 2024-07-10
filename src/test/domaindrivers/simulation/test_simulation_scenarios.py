@@ -5,10 +5,10 @@ from uuid import UUID
 
 from domaindrivers.smartschedule.optimization.optimization_facade import OptimizationFacade
 from domaindrivers.smartschedule.optimization.result import Result
-from domaindrivers.smartschedule.shared.time_slot import TimeSlot
+from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.additional_priced_capability import AdditionalPricedCapability
 from domaindrivers.smartschedule.simulation.available_resource_capability import AvailableResourceCapability
-from domaindrivers.smartschedule.simulation.capability import Capability
 from domaindrivers.smartschedule.simulation.demand import Demand
 from domaindrivers.smartschedule.simulation.project_id import ProjectId
 from domaindrivers.smartschedule.simulation.simulated_capabilities import SimulatedCapabilities
@@ -58,11 +58,7 @@ class TestSimulationScenarios(TestCase):
         )
 
         # when
-        result: Result = (
-            self.simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
-                simulated_projects, simulated_availability
-            )
-        )
+        result: Result = self.simulation_facade.what_is_the_optimal_setup(simulated_projects, simulated_availability)
 
         # then
         self.assertEqual(108.0, result.profit)
@@ -91,11 +87,7 @@ class TestSimulationScenarios(TestCase):
         )
 
         # when
-        result: Result = (
-            self.simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
-                simulated_projects, simulated_availability
-            )
-        )
+        result: Result = self.simulation_facade.what_is_the_optimal_setup(simulated_projects, simulated_availability)
 
         # then
         self.assertEqual(99.0, result.profit)
@@ -129,15 +121,11 @@ class TestSimulationScenarios(TestCase):
         )
 
         # when
-        result_without_extra_resource: Result = (
-            self.simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
-                simulated_projects, simulated_availability
-            )
+        result_without_extra_resource: Result = self.simulation_facade.what_is_the_optimal_setup(
+            simulated_projects, simulated_availability
         )
-        result_with_extra_resource: Result = (
-            self.simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
-                simulated_projects, simulated_availability.add(extra_capability)
-            )
+        result_with_extra_resource: Result = self.simulation_facade.what_is_the_optimal_setup(
+            simulated_projects, simulated_availability.add(extra_capability)
         )
 
         # then
@@ -167,11 +155,7 @@ class TestSimulationScenarios(TestCase):
         )
 
         # when
-        result: Result = (
-            self.simulation_facade.which_project_with_missing_demands_is_most_profitable_to_allocate_resources_to(
-                simulated_projects, simulated_availability
-            )
-        )
+        result: Result = self.simulation_facade.what_is_the_optimal_setup(simulated_projects, simulated_availability)
 
         # then
         self.assertEqual(str(self.PROJECT_1), result.chosen_items[0].name)

@@ -5,7 +5,7 @@ from domaindrivers.smartschedule.optimization.optimization_facade import Optimiz
 from domaindrivers.smartschedule.optimization.result import Result
 from domaindrivers.smartschedule.optimization.total_capacity import TotalCapacity
 from domaindrivers.smartschedule.optimization.total_weight import TotalWeight
-from domaindrivers.smartschedule.shared.time_slot import TimeSlot
+from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 from .capability_capacity_dimension import CapabilityTimedCapacityDimension, CapabilityTimedWeightDimension
 
