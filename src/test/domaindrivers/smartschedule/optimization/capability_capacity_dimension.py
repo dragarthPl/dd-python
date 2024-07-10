@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from attr import frozen
 from domaindrivers.smartschedule.optimization.capacity_dimension import CapacityDimension
 from domaindrivers.smartschedule.optimization.weight_dimension import WeightDimension
-from domaindrivers.smartschedule.shared.time_slot import TimeSlot
+from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 @frozen

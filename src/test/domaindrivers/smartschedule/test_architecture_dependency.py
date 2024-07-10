@@ -52,6 +52,15 @@ class ArchitectureDependencyTest(TestCase):
                 .access_layers_that()
                 .are_named(["utils", "optimization", "shared"])
             ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("shared")
+                .should_only()
+                .access_layers_that()
+                .are_named(["utils"])
+            ),
         ]
 
         for rule in rules:

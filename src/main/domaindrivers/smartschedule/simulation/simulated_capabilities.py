@@ -6,6 +6,10 @@ from domaindrivers.smartschedule.simulation.available_resource_capability import
 class SimulatedCapabilities:
     capabilities: list[AvailableResourceCapability]
 
+    @classmethod
+    def none(cls) -> "SimulatedCapabilities":
+        return cls([])
+
     def __is_list_of_available_resource_capability(self, new_capabilities: list[AvailableResourceCapability]) -> bool:
         if not isinstance(new_capabilities, list):
             return False
