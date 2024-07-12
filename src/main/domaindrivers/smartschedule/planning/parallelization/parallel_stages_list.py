@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from functools import cmp_to_key
+from typing import Callable
+
 from attrs import frozen
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages import ParallelStages
 
@@ -12,9 +15,16 @@ class ParallelStagesList:
     def empty(cls) -> "ParallelStagesList":
         return cls([])
 
+    @classmethod
+    def of(cls, *stages: ParallelStages) -> "ParallelStagesList":
+        return cls(list(stages))
+
     def print(self) -> str:
         return " | ".join(map(lambda stages: stages.print(), self.all))
 
     def add(self, new_parallel_stages: ParallelStages) -> "ParallelStagesList":
         result: list[ParallelStages] = self.all + [new_parallel_stages]
         return ParallelStagesList(result)
+
+    def all_sorted(self, comparing: Callable[[ParallelStages, ParallelStages], int]) -> list[ParallelStages]:
+        return sorted(self.all, key=cmp_to_key(comparing))
