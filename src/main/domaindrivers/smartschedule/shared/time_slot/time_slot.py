@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from attr import frozen
@@ -11,6 +11,10 @@ from dateutil.relativedelta import relativedelta
 class TimeSlot:
     since: datetime
     to: datetime
+
+    @classmethod
+    def empty(cls) -> "TimeSlot":
+        return cls(datetime.min, datetime.min)
 
     @classmethod
     def create_daily_time_slot_at_utc(cls, year: int, month: int, day: int) -> "TimeSlot":
@@ -49,3 +53,19 @@ class TimeSlot:
         if other.to > self.to:
             result.append(TimeSlot(self.to, other.to))
         return result
+
+    def common_part_with(self, other: TimeSlot) -> TimeSlot:
+        if not self.overlaps_with(other):
+            return TimeSlot.empty()
+        common_start: datetime = self.since if self.since > other.since else other.since
+        common_end: datetime = self.to if self.to < other.to else other.to
+        return TimeSlot(common_start, common_end)
+
+    def is_empty(self) -> bool:
+        return self.since == self.to
+
+    def duration(self) -> timedelta:
+        return self.to - self.since
+
+    def stretch(self, duration: timedelta) -> TimeSlot:
+        return TimeSlot(self.since - duration, self.to + duration)
