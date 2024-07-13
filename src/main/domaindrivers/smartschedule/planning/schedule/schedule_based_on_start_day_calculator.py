@@ -14,7 +14,14 @@ class ScheduleBasedOnStartDayCalculator:
         comparing: Callable[[ParallelStages, ParallelStages], int],
     ) -> dict[str, TimeSlot]:
         schedule_map: dict[str, TimeSlot] = {}
-        current_start: datetime = start_date  # noqa: F841
-        all_sorted: list[ParallelStages] = parallelized_stages.all_sorted(comparing)  # noqa: F841
-        # TODO
+        current_start: datetime = start_date
+        all_sorted: list[ParallelStages] = parallelized_stages.all_sorted(comparing)
+        for stages in all_sorted:
+            parallelized_stages_end: datetime = current_start
+            for stage in stages.stages:
+                stage_end: datetime = current_start + stage.duration
+                schedule_map[stage.stage_name] = TimeSlot(current_start, stage_end)
+                if stage_end > parallelized_stages_end:
+                    parallelized_stages_end = stage_end
+            current_start = parallelized_stages_end
         return schedule_map
