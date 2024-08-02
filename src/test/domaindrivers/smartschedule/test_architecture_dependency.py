@@ -18,6 +18,8 @@ class ArchitectureDependencyTest(TestCase):
 
         architecture = (
             LayeredArchitecture()  # type: ignore[attr-defined]
+            .layer("availability")
+            .containing_modules("domaindrivers.smartschedule.availability")
             .layer("parallelization")
             .containing_modules("domaindrivers.smartschedule.planning.parallelization")
             .layer("sorter")
@@ -40,7 +42,16 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("parallelization")
                 .should_only()
                 .access_layers_that()
-                .are_named("sorter")
+                .are_named(["sorter", "shared", "utils"])
+            ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("availability")
+                .should_only()
+                .access_layers_that()
+                .are_named(["shared"])
             ),
             (LayerRule().based_on(architecture).layers_that().are_named("sorter").should_not().access_any_layer()),
             (

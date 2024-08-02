@@ -3,7 +3,7 @@ from datetime import timedelta
 from typing import Any
 
 from attr import frozen
-from domaindrivers.smartschedule.planning.parallelization.resource_name import ResourceName
+from domaindrivers.smartschedule.shared.resource_name import ResourceName
 
 
 @frozen

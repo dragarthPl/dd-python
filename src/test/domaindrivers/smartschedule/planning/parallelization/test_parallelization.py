@@ -2,9 +2,9 @@ from typing import Final
 from unittest import TestCase
 
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
-from domaindrivers.smartschedule.planning.parallelization.resource_name import ResourceName
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.parallelization.stage_parallelization import StageParallelization
+from domaindrivers.smartschedule.shared.resource_name import ResourceName
 
 
 class TestParallelization(TestCase):

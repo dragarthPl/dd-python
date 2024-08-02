@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime
 from typing import Callable
 
@@ -15,12 +16,12 @@ class ScheduleBasedOnStartDayCalculator:
     ) -> dict[str, TimeSlot]:
         schedule_map: dict[str, TimeSlot] = {}
         current_start: datetime = start_date
-        all_sorted: list[ParallelStages] = parallelized_stages.all_sorted(comparing)
+        all_sorted: list[ParallelStages] = parallelized_stages.all_sorted_with(comparing)
         for stages in all_sorted:
             parallelized_stages_end: datetime = current_start
             for stage in stages.stages:
                 stage_end: datetime = current_start + stage.duration
-                schedule_map[stage.stage_name] = TimeSlot(current_start, stage_end)
+                schedule_map[stage.stage_name] = TimeSlot(copy(current_start), stage_end)
                 if stage_end > parallelized_stages_end:
                     parallelized_stages_end = stage_end
             current_start = parallelized_stages_end

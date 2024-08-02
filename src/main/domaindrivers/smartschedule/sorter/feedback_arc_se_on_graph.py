@@ -1,4 +1,4 @@
-from attrs import frozen
+from attr import frozen
 from domaindrivers.smartschedule.sorter.node import Node
 
 
