@@ -2,12 +2,13 @@ from datetime import datetime, timedelta
 from typing import Final
 from unittest import TestCase
 
+from domaindrivers.smartschedule.availability.calendar import Calendar
+from domaindrivers.smartschedule.availability.calendars import Calendars
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages import ParallelStages
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
-from domaindrivers.smartschedule.planning.parallelization.resource_name import ResourceName
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
-from domaindrivers.smartschedule.planning.schedule.calendars import Calendar, Calendars
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
+from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 from .assertions.schedule_assert import ScheduleAssert

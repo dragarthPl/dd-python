@@ -1,7 +1,9 @@
 from datetime import timedelta
+from typing import cast
 
 from attrs import frozen
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
+from domaindrivers.utils.duration import ZERO
 
 
 @frozen
@@ -16,4 +18,4 @@ class ParallelStages:
         return ParallelStages(set(stages))
 
     def duration(self) -> timedelta:
-        return max(map(lambda stage: stage.duration, self.stages)) or timedelta(seconds=0)
+        return cast(timedelta, max(map(lambda stage: stage.duration, self.stages)) or ZERO)

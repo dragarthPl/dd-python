@@ -5,10 +5,10 @@ from unittest import TestCase
 from pytestarch import get_evaluable_architecture, LayeredArchitecture, LayerRule  # type: ignore[attr-defined]
 
 ROOT_DIR = os.path.join(
-    str(Path(os.path.join(os.path.abspath(__file__))).parent.parent.parent), "main", "domaindrivers"
+    str(Path(os.path.join(os.path.abspath(__file__))).parent.parent.parent.parent), "main", "domaindrivers"
 )
 MODULE_DIR = os.path.join(
-    str(Path(os.path.join(os.path.abspath(__file__))).parent.parent.parent), "main", "domaindrivers"
+    str(Path(os.path.join(os.path.abspath(__file__))).parent.parent.parent.parent), "main", "domaindrivers"
 )
 
 
@@ -18,6 +18,8 @@ class ArchitectureDependencyTest(TestCase):
 
         architecture = (
             LayeredArchitecture()  # type: ignore[attr-defined]
+            .layer("availability")
+            .containing_modules("domaindrivers.smartschedule.availability")
             .layer("parallelization")
             .containing_modules("domaindrivers.smartschedule.planning.parallelization")
             .layer("sorter")
@@ -40,7 +42,16 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("parallelization")
                 .should_only()
                 .access_layers_that()
-                .are_named("sorter")
+                .are_named(["sorter", "shared", "utils"])
+            ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("availability")
+                .should_only()
+                .access_layers_that()
+                .are_named(["shared"])
             ),
             (LayerRule().based_on(architecture).layers_that().are_named("sorter").should_not().access_any_layer()),
             (

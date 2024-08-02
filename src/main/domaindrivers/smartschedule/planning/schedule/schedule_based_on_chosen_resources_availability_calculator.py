@@ -1,9 +1,10 @@
 from datetime import timedelta
 from functools import reduce
 
+from domaindrivers.smartschedule.availability.calendars import Calendars
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
-from domaindrivers.smartschedule.planning.schedule.calendars import Calendars
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from domaindrivers.utils.duration import ZERO
 
 
 class ScheduleBasedOnChosenResourcesAvailabilityCalculator:
@@ -26,7 +27,7 @@ class ScheduleBasedOnChosenResourcesAvailabilityCalculator:
         return TimeSlot(common_slot_for_all_resources.since, common_slot_for_all_resources.since + stage.duration)
 
     def __is_slot_long_enough_for_stage(self, stage: Stage, slot: TimeSlot) -> bool:
-        return bool((slot.duration() - stage.duration) >= timedelta(seconds=0))
+        return bool((slot.duration() - stage.duration) >= ZERO)
 
     def __find_common_part_of_slots(self, found_slots: list[TimeSlot]) -> TimeSlot:
         return reduce(lambda x, y: x.common_part_with(y), found_slots) or TimeSlot.empty()

@@ -7,6 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 packages = [
+    { include = "src"},
     { include = "src/main" },
     { include = "domaindrivers", from = "src/main" },
 ]
@@ -31,13 +32,16 @@ pytz = "^2024.1"
 jsonpickle = "^3.2.2"
 types-pytz = "^2024.1.0.20240417"
 types-python-dateutil = "^2.9.0.20240316"
+sqlalchemy = "^2.0.31"
+testcontainers = {extras = ["postgres"], version = "^4.7.2"}
+psycopg2 = "^2.9.9"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.4.0"
+black = "^24.4.2"
 isort = "^5.13.2"
-pytest = "^8.1.1"
-mypy = "^1.10.0"
-ruff = "^0.4.2"
+pytest = "^8.3.2"
+mypy = "^1.11.1"
+ruff = "^0.5.5"
 
 [build-system]
 requires = ["poetry-core"]
@@ -60,6 +64,7 @@ skip-string-normalization = true
 
 [tool.pytest.ini_options]
 testpaths = [
+    "src",
     "src/main",
 ]
 

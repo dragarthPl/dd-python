@@ -15,7 +15,7 @@ class ScheduleBasedOnReferenceStageCalculator:
         parallelized_stages: ParallelStagesList,
         comparing: Callable[[ParallelStages, ParallelStages], int],
     ) -> dict[str, TimeSlot]:
-        all: list[ParallelStages] = parallelized_stages.all_sorted(comparing)
+        all: list[ParallelStages] = parallelized_stages.all_sorted_with(comparing)
         reference_stage_index: int = self.__find_reference_stage_index(reference_stage, all)
         if reference_stage_index == -1:
             return {}
