@@ -12,6 +12,10 @@ class ParallelStagesList:
     all: list[ParallelStages]
 
     @classmethod
+    def empty(cls) -> "ParallelStagesList":
+        return cls([])
+
+    @classmethod
     def of(cls, *stages: ParallelStages) -> "ParallelStagesList":
         return cls(list(stages))
 
