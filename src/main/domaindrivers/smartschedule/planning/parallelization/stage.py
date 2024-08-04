@@ -37,10 +37,18 @@ class Stage:
     def __eq__(self, other: Any) -> bool:
         if other is None or not isinstance(other, Stage):
             return False
-        return bool(self.stage_name == other.name)
+        return (
+            bool(self.stage_name == other.name)
+            and bool(self.dependencies == other.dependencies)
+            and bool(self.resources == other.resources)
+            and bool(self.duration == other.duration)
+        )
 
     def __hash__(self) -> int:
         m = hashlib.md5()
         m.update(str(self.stage_name).encode("utf-8"))
+        m.update(str(self.dependencies).encode("utf-8"))
+        m.update(str(self.resources).encode("utf-8"))
+        m.update(str(self.duration).encode("utf-8"))
 
         return int(m.hexdigest(), 16)
