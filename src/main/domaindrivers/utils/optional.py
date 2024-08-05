@@ -32,3 +32,6 @@ class Optional(Generic[T]):
         if self._value is not None:
             return Optional.of(select(self._value))
         return Optional.empty()
+
+    def is_present(self) -> bool:
+        return self._value is not None

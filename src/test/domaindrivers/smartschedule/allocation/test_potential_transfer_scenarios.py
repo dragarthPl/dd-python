@@ -30,7 +30,7 @@ class TestPotentialTransferScenarios(TestCase):
 
     BANKING_SOFT_ID: Final[UUID] = uuid.uuid4()
     INSURANCE_SOFT_ID: Final[UUID] = uuid.uuid4()
-    STASZEK_JAVA_MID: Final[AllocatedCapability] = AllocatedCapability(
+    STASZEK_JAVA_MID: Final[AllocatedCapability] = AllocatedCapability.of(
         uuid.uuid4(), Capability.skill("JAVA-MID"), JAN_1
     )
 
