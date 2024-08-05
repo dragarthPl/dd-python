@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 class UUID(TypeDecorator):  # type: ignore
     impl = CHAR
+    cache_ok = True
 
     def load_dialect_impl(self, dialect: Dialect) -> Any:
         if dialect.name == "postgresql":

@@ -25,7 +25,7 @@ class Projects:
         removed: AllocatedCapability = project_from.remove(capability, for_slot)
         if not removed:
             return self
-        project_to.add(AllocatedCapability(removed.resource_id, removed.capability, for_slot))
+        project_to.add(AllocatedCapability.of(removed.resource_id, removed.capability, for_slot))
         return Projects(self.projects)
 
     def to_simulated_projects(self) -> list[SimulatedProject]:

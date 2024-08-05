@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from attr import frozen
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
@@ -16,13 +18,13 @@ class Allocations:
         all.add(new_capability)
         return Allocations(all)
 
-    def remove(self, to_remove: AllocatedCapability, slot: TimeSlot) -> "Allocations":
-        return next(map(lambda ar: self.__remove_from_slot(ar, slot), [self.find(to_remove, slot)]), self)
+    def remove(self, to_remove: UUID, slot: TimeSlot) -> "Allocations":
+        return next(map(lambda ar: self.__remove_from_slot(ar, slot), filter(bool, [self.find(to_remove)])), self)
 
     def __remove_from_slot(self, allocated_resource: AllocatedCapability, slot: TimeSlot) -> "Allocations":
         left_overs: set[AllocatedCapability] = set(
             map(
-                lambda left_over: AllocatedCapability(
+                lambda left_over: AllocatedCapability.of(
                     allocated_resource.resource_id, allocated_resource.capability, left_over
                 ),
                 filter(
@@ -37,5 +39,5 @@ class Allocations:
             new_slots.add(el)
         return Allocations(new_slots)
 
-    def find(self, capability: AllocatedCapability, slot: TimeSlot) -> AllocatedCapability:
-        return next(filter(lambda ar: ar == capability, self.all), None)
+    def find(self, allocated_capability_id: UUID) -> AllocatedCapability:
+        return next(filter(lambda ar: ar.allocated_capability_id == allocated_capability_id, self.all), None)

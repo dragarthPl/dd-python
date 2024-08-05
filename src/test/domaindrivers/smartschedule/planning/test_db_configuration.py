@@ -22,6 +22,7 @@ class DataSource:
 
 
 class TestDbConfiguration:
+    __test__ = False
     __scripts: dict[str, str]
     __postgres_sqlcontainer: PostgresContainer
 
