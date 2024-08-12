@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from attrs import define, field
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.allocation.allocations import Allocations
 from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
@@ -17,29 +18,12 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
 
 
+@define(slots=False)
 class ProjectAllocations:
-    _project_id: ProjectAllocationsId
-    _allocations: Allocations
-    _demands: Demands
-    _time_slot: TimeSlot
-
-    def __init__(
-        self,
-        project_id: ProjectAllocationsId = None,
-        allocations: Allocations = None,
-        scheduled_demands: Demands = None,
-        time_slot: TimeSlot = None,
-    ) -> None:
-        if project_id:
-            self._project_id = project_id
-        if allocations:
-            self._allocations = allocations
-        if scheduled_demands:
-            self._demands = scheduled_demands
-        if time_slot:
-            self._time_slot = time_slot
-        else:
-            self._time_slot = None
+    _project_id: ProjectAllocationsId = field(default=None)
+    _allocations: Allocations = field(default=None)
+    _demands: Demands = field(default=None)
+    _time_slot: TimeSlot = field(default=None)
 
     @classmethod
     def empty(cls, project_id: ProjectAllocationsId) -> "ProjectAllocations":
@@ -86,6 +70,9 @@ class ProjectAllocations:
     def missing_demands(self) -> Demands:
         return self._demands.missing_demands(self._allocations)
 
+    def demands(self) -> Demands:
+        return self._demands
+
     def allocations(self) -> Allocations:
         return self._allocations
 
@@ -99,3 +86,10 @@ class ProjectAllocations:
     def add_demands(self, new_demands: Demands, when: datetime) -> Optional[ProjectAllocationsDemandsScheduled]:
         self._demands = self._demands.with_new(new_demands)
         return Optional.of(ProjectAllocationsDemandsScheduled.of(self._project_id, self.missing_demands(), when))
+
+    @property
+    def id(self) -> ProjectAllocationsId:
+        return self._project_id
+
+    def time_slot(self) -> TimeSlot:
+        return self._time_slot

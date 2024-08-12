@@ -20,3 +20,7 @@ class Capability(Serializable):
     @classmethod
     def asset(cls, asset: str) -> "Capability":
         return cls(asset, "ASSET")
+
+    @classmethod
+    def skills(cls, *skills: str) -> list[Capability]:
+        return [Capability.skill(skill) for skill in skills]

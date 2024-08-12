@@ -2,19 +2,17 @@ import hashlib
 import uuid
 from typing import Any
 
+from attrs import field, frozen
 from domaindrivers.utils.serializable import Serializable
 
 
+@frozen
 class ProjectAllocationsId(Serializable):
-    __project_allocations_id: uuid.UUID
+    __project_allocations_id: uuid.UUID = field(default=None)
 
     @classmethod
     def new_one(cls) -> "ProjectAllocationsId":
         return ProjectAllocationsId(uuid.uuid4())
-
-    def __init__(self, project_allocations_id: uuid.UUID = None):
-        if project_allocations_id is not None:
-            self.__project_allocations_id = project_allocations_id
 
     def id(self) -> uuid.UUID:
         return self.__project_allocations_id

@@ -3,7 +3,7 @@ import uuid
 from typing import Any
 from uuid import UUID
 
-from attr import frozen
+from attr import field, frozen
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
@@ -13,7 +13,7 @@ class AllocatedCapability:
     allocated_capability_id: UUID
     resource_id: UUID
     capability: Capability
-    time_slot: TimeSlot
+    time_slot: TimeSlot = field(default=None)
 
     @classmethod
     def of(cls, resource_id: UUID, capability: Capability, time_slot: TimeSlot) -> "AllocatedCapability":
