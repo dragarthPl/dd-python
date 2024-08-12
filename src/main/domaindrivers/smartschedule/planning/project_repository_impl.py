@@ -2,12 +2,11 @@ from typing import cast
 
 import injector
 from domaindrivers.smartschedule.planning.project import Project
+from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.project_repository import ProjectRepository
 from domaindrivers.utils.optional import Optional
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
-
-from .project_id import ProjectId
 
 
 class ProjectRepositoryImpl(ProjectRepository):  # type: ignore

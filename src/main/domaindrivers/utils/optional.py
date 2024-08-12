@@ -35,3 +35,8 @@ class Optional(Generic[T]):
 
     def is_present(self) -> bool:
         return self._value is not None
+
+    def or_else_get(self, supplier: Callable[[], T]) -> T:
+        if self._value is None:
+            return supplier()
+        return self._value

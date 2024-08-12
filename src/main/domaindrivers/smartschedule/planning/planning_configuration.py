@@ -8,15 +8,6 @@ from domaindrivers.smartschedule.planning.project_repository_impl import Project
 from injector import Module, provider, singleton
 from sqlalchemy.orm import Session
 
-# @Configuration
-# class PlanningConfiguration:
-#
-#     def planning_facade(self, project_repository: ProjectRepository, plan_chosen_resources_service: PlanChosenResources) -> PlanningFacade:
-#         return PlanningFacade(project_repository, StageParallelization(), plan_chosen_resources_service)
-#
-#     def plan_chosen_resources_service(self, project_repository: ProjectRepository) -> PlanChosenResources:
-#         return PlanChosenResources(project_repository, AvailabilityFacade())
-
 
 class PlanningConfiguration(Module):
     def configure(self, binder: injector.Binder) -> None:

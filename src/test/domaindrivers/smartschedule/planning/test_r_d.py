@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
-from test.domaindrivers.smartschedule.planning.test_db_configuration import TestDbConfiguration
+from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
 from typing import Final
 from unittest import TestCase
 

@@ -8,7 +8,7 @@ from sqlalchemy import text
 from testcontainers.postgres import PostgresContainer
 
 CURRENT_DIR_PATH = Path(os.path.dirname(os.path.abspath(__file__)))
-RESOURCES_PATH = os.path.join(CURRENT_DIR_PATH.parent.parent.parent.parent, "main", "resources")
+RESOURCES_PATH = os.path.join(CURRENT_DIR_PATH.parent.parent.parent, "main", "resources")
 
 
 @frozen

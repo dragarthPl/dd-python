@@ -2,19 +2,37 @@ import uuid
 from decimal import Decimal
 from typing import Final
 from unittest import TestCase
-from uuid import UUID
 
 from dateutil.relativedelta import relativedelta
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
-from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
+from domaindrivers.smartschedule.allocation.allocations import Allocations
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
-from domaindrivers.smartschedule.allocation.project import Project
-from domaindrivers.smartschedule.allocation.projects import Projects
+from domaindrivers.smartschedule.allocation.potential_transfers import PotentialTransfers
+from domaindrivers.smartschedule.allocation.potential_transfers_service import PotentialTransfersService
+from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
+from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.optimization.optimization_facade import OptimizationFacade
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.simulation_facade import SimulationFacade
+
+
+class Project:
+    project_allocations_id: ProjectAllocationsId
+    earnings: Decimal
+    demands: Demands
+    allocations: Allocations
+
+    def __init__(self, project_allocations_id: ProjectAllocationsId, demands: Demands, earnings: Decimal):
+        self.project_allocations_id = project_allocations_id
+        self.demands = demands
+        self.earnings = earnings
+        self.allocations = Allocations.none()
+
+    def add(self, allocated_capability: AllocatedCapability) -> Allocations:
+        self.allocations = self.allocations.add(allocated_capability)
+        return self.allocations
 
 
 class TestPotentialTransferScenarios(TestCase):
@@ -28,24 +46,24 @@ class TestPotentialTransferScenarios(TestCase):
         [Demand(Capability.skill("JAVA-MID"), JAN_1), Demand(Capability.skill("PYTHON-MID"), JAN_1)]
     )
 
-    BANKING_SOFT_ID: Final[UUID] = uuid.uuid4()
-    INSURANCE_SOFT_ID: Final[UUID] = uuid.uuid4()
+    BANKING_SOFT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
+    INSURANCE_SOFT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
     STASZEK_JAVA_MID: Final[AllocatedCapability] = AllocatedCapability.of(
         uuid.uuid4(), Capability.skill("JAVA-MID"), JAN_1
     )
 
-    simulation_facade: AllocationFacade = AllocationFacade(SimulationFacade(OptimizationFacade()))
+    potential_transfers: PotentialTransfersService = PotentialTransfersService(SimulationFacade(OptimizationFacade()))
 
     def test_simulates_moving_capabilities_to_different_project(self) -> None:
         # given
-        banking_soft: Project = Project(self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
-        insurance_soft: Project = Project(self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(90))
-        projects: Projects = Projects({self.BANKING_SOFT_ID: banking_soft, self.INSURANCE_SOFT_ID: insurance_soft})
-        # and
+        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
+        insurance_soft: Project = Project(self.INSURANCE_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(90))
+
         banking_soft.add(self.STASZEK_JAVA_MID)
+        projects: PotentialTransfers = self.to_potential_transfers(banking_soft, insurance_soft)
 
         # when
-        result: float = self.simulation_facade.check_potential_transfer(
+        result: float = self.potential_transfers.check_potential_transfer(
             projects, self.BANKING_SOFT_ID, self.INSURANCE_SOFT_ID, self.STASZEK_JAVA_MID, self.JAN_1
         )
 
@@ -54,14 +72,16 @@ class TestPotentialTransferScenarios(TestCase):
 
     def test_simulates_moving_capabilities_to_different_project_just_for_awhile(self) -> None:
         # given
-        banking_soft: Project = Project(self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
-        insurance_soft: Project = Project(self.DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, Decimal(99))
-        projects: Projects = Projects({self.BANKING_SOFT_ID: banking_soft, self.INSURANCE_SOFT_ID: insurance_soft})
-        # and
+        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
+        insurance_soft: Project = Project(
+            self.INSURANCE_SOFT_ID, self.DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, Decimal(99)
+        )
+
         banking_soft.add(self.STASZEK_JAVA_MID)
+        projects: PotentialTransfers = self.to_potential_transfers(banking_soft, insurance_soft)
 
         # when
-        result: float = self.simulation_facade.check_potential_transfer(
+        result: float = self.potential_transfers.check_potential_transfer(
             projects, self.BANKING_SOFT_ID, self.INSURANCE_SOFT_ID, self.STASZEK_JAVA_MID, self.FIFTEEN_MINUTES_IN_JAN
         )
 
@@ -70,16 +90,26 @@ class TestPotentialTransferScenarios(TestCase):
 
     def test_the_move_gives_zero_profit_when_there_are_still_missing_demands(self) -> None:
         # given
-        banking_soft: Project = Project(self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
-        insurance_soft: Project = Project(self.DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, Decimal(99))
-        projects: Projects = Projects({self.BANKING_SOFT_ID: banking_soft, self.INSURANCE_SOFT_ID: insurance_soft})
-        # and
+        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
+        insurance_soft: Project = Project(self.INSURANCE_SOFT_ID, self.DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, Decimal(99))
+
         banking_soft.add(self.STASZEK_JAVA_MID)
+        projects: PotentialTransfers = self.to_potential_transfers(banking_soft, insurance_soft)
 
         # when
-        result: float = self.simulation_facade.check_potential_transfer(
+        result: float = self.potential_transfers.check_potential_transfer(
             projects, self.BANKING_SOFT_ID, self.INSURANCE_SOFT_ID, self.STASZEK_JAVA_MID, self.JAN_1
         )
 
         # then
         self.assertEqual(Decimal(-9), result)
+
+    def to_potential_transfers(self, *projects: Project) -> PotentialTransfers:
+        allocations: dict[ProjectAllocationsId, Allocations] = {}
+        demands: dict[ProjectAllocationsId, Demands] = {}
+        earnings: dict[ProjectAllocationsId, Decimal] = {}
+        for project in projects:
+            allocations[project.project_allocations_id] = project.allocations
+            demands[project.project_allocations_id] = project.demands
+            earnings[project.project_allocations_id] = project.earnings
+        return PotentialTransfers(ProjectsAllocationsSummary({}, allocations, demands), earnings)

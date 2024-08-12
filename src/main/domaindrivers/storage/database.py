@@ -16,7 +16,7 @@ class DatabaseModule(injector.Module):
 
     @staticmethod
     def __custom_sqlalchemy_serialize(obj: Any) -> str:
-        return cast(str, jsonpickle.encode(obj))
+        return cast(str, jsonpickle.encode(obj, make_refs=False))
 
     @staticmethod
     def __custom_sqlalchemy_deserialize(data: str) -> Any:
