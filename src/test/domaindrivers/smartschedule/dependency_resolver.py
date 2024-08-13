@@ -2,6 +2,7 @@ from typing import Type, TypeVar
 
 import injector
 from domaindrivers.smartschedule.allocation.allocation_configuration import AllocationConfiguration
+from domaindrivers.smartschedule.allocation.cashflow.cash_flow_configuration import CashFlowConfiguration
 from domaindrivers.smartschedule.planning.planning_configuration import PlanningConfiguration
 from domaindrivers.storage.database import DatabaseModule
 from injector import Injector
@@ -24,6 +25,7 @@ class DependencyResolverForTest:
                 DatabaseModule(database_uri=database_uri),
                 PlanningConfiguration(),
                 AllocationConfiguration(),
+                CashFlowConfiguration(),
             ]
         )
 

@@ -6,6 +6,7 @@ from unittest import TestCase
 from dateutil.relativedelta import relativedelta
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.allocation.allocations import Allocations
+from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.potential_transfers import PotentialTransfers
@@ -20,11 +21,11 @@ from domaindrivers.smartschedule.simulation.simulation_facade import SimulationF
 
 class Project:
     project_allocations_id: ProjectAllocationsId
-    earnings: Decimal
+    earnings: Earnings
     demands: Demands
     allocations: Allocations
 
-    def __init__(self, project_allocations_id: ProjectAllocationsId, demands: Demands, earnings: Decimal):
+    def __init__(self, project_allocations_id: ProjectAllocationsId, demands: Demands, earnings: Earnings):
         self.project_allocations_id = project_allocations_id
         self.demands = demands
         self.earnings = earnings
@@ -56,8 +57,8 @@ class TestPotentialTransferScenarios(TestCase):
 
     def test_simulates_moving_capabilities_to_different_project(self) -> None:
         # given
-        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
-        insurance_soft: Project = Project(self.INSURANCE_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(90))
+        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(9))
+        insurance_soft: Project = Project(self.INSURANCE_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(90))
 
         banking_soft.add(self.STASZEK_JAVA_MID)
         projects: PotentialTransfers = self.to_potential_transfers(banking_soft, insurance_soft)
@@ -72,9 +73,9 @@ class TestPotentialTransferScenarios(TestCase):
 
     def test_simulates_moving_capabilities_to_different_project_just_for_awhile(self) -> None:
         # given
-        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
+        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(9))
         insurance_soft: Project = Project(
-            self.INSURANCE_SOFT_ID, self.DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, Decimal(99)
+            self.INSURANCE_SOFT_ID, self.DEMAND_FOR_JAVA_JUST_FOR_15MIN_IN_JAN, Earnings.of(99)
         )
 
         banking_soft.add(self.STASZEK_JAVA_MID)
@@ -90,8 +91,10 @@ class TestPotentialTransferScenarios(TestCase):
 
     def test_the_move_gives_zero_profit_when_there_are_still_missing_demands(self) -> None:
         # given
-        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Decimal(9))
-        insurance_soft: Project = Project(self.INSURANCE_SOFT_ID, self.DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, Decimal(99))
+        banking_soft: Project = Project(self.BANKING_SOFT_ID, self.DEMAND_FOR_JAVA_MID_IN_JAN, Earnings.of(9))
+        insurance_soft: Project = Project(
+            self.INSURANCE_SOFT_ID, self.DEMANDS_FOR_JAVA_AND_PYTHON_IN_JAN, Earnings.of(99)
+        )
 
         banking_soft.add(self.STASZEK_JAVA_MID)
         projects: PotentialTransfers = self.to_potential_transfers(banking_soft, insurance_soft)
@@ -107,7 +110,7 @@ class TestPotentialTransferScenarios(TestCase):
     def to_potential_transfers(self, *projects: Project) -> PotentialTransfers:
         allocations: dict[ProjectAllocationsId, Allocations] = {}
         demands: dict[ProjectAllocationsId, Demands] = {}
-        earnings: dict[ProjectAllocationsId, Decimal] = {}
+        earnings: dict[ProjectAllocationsId, Earnings] = {}
         for project in projects:
             allocations[project.project_allocations_id] = project.allocations
             demands[project.project_allocations_id] = project.demands

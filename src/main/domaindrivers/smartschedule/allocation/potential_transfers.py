@@ -1,8 +1,7 @@
-from decimal import Decimal
-
 from attr import frozen
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.allocation.allocations import Allocations
+from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
@@ -15,7 +14,7 @@ from domaindrivers.smartschedule.simulation.simulated_project import SimulatedPr
 @frozen
 class PotentialTransfers:
     summary: ProjectsAllocationsSummary
-    earnings: dict[ProjectAllocationsId, Decimal]
+    earnings: dict[ProjectAllocationsId, Earnings]
 
     def transfer(
         self,
@@ -43,7 +42,7 @@ class PotentialTransfers:
             map(
                 lambda project: SimulatedProject(
                     ProjectId.from_key(project.id()),
-                    lambda: self.earnings[project],
+                    lambda: self.earnings[project].to_decimal(),
                     self.get_missing_demands(project),
                 ),
                 self.summary.project_allocations.keys(),
