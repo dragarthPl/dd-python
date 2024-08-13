@@ -54,7 +54,6 @@ class AllocationFacade:
             self.__project_allocations_repository.save(allocations)
             return event.map(lambda capabilities_allocated: capabilities_allocated.allocated_capability_id)
 
-    # @Transactional
     def release_from_project(
         self, project_id: ProjectAllocationsId, allocatable_capability_id: UUID, time_slot: TimeSlot
     ) -> bool:

@@ -20,6 +20,10 @@ class ArchitectureDependencyTest(TestCase):
             LayeredArchitecture()  # type: ignore[attr-defined]
             .layer("availability")
             .containing_modules("domaindrivers.smartschedule.availability")
+            .layer("allocation")
+            .containing_modules("domaindrivers.smartschedule.allocation")
+            .layer("cashflow")
+            .containing_modules("domaindrivers.smartschedule.allocation.cashflow")
             .layer("parallelization")
             .containing_modules("domaindrivers.smartschedule.planning.parallelization")
             .layer("sorter")
@@ -32,6 +36,8 @@ class ArchitectureDependencyTest(TestCase):
             .containing_modules("domaindrivers.smartschedule.optimization")
             .layer("shared")
             .containing_modules("domaindrivers.smartschedule.shared")
+            .layer("storage")
+            .containing_modules("domaindrivers.storage")
         )
 
         rules = [
@@ -52,6 +58,25 @@ class ArchitectureDependencyTest(TestCase):
                 .should_only()
                 .access_layers_that()
                 .are_named(["shared"])
+            ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("allocation")
+                .should_only()
+                .access_layers_that()
+                .are_named(
+                    [
+                        "shared",
+                        # "availability",
+                        "cashflow",
+                        "simulation",
+                        "optimization",
+                        "utils",
+                        "storage",
+                    ]
+                )
             ),
             (LayerRule().based_on(architecture).layers_that().are_named("sorter").should_not().access_any_layer()),
             (
