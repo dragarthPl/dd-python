@@ -57,7 +57,7 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("availability")
                 .should_only()
                 .access_layers_that()
-                .are_named(["shared"])
+                .are_named(["shared", "utils"])
             ),
             (
                 LayerRule()

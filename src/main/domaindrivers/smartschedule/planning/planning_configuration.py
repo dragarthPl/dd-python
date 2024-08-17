@@ -28,6 +28,6 @@ class PlanningConfiguration(Module):
     @singleton
     @provider
     def plan_chosen_resources_service(
-        self, session: Session, project_repository: ProjectRepository
+        self, session: Session, project_repository: ProjectRepository, availability_facade: AvailabilityFacade
     ) -> PlanChosenResources:
-        return PlanChosenResources(session, project_repository, AvailabilityFacade())
+        return PlanChosenResources(session, project_repository, availability_facade)
