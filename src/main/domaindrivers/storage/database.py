@@ -2,7 +2,7 @@ from typing import Any, cast
 
 import injector
 import jsonpickle
-from sqlalchemy import Connection, create_engine, Engine
+from sqlalchemy import Connection, create_engine, Engine, QueuePool
 from sqlalchemy.orm import Session, sessionmaker
 
 
@@ -27,6 +27,9 @@ class DatabaseModule(injector.Module):
             self.__database_uri,
             json_serializer=self.__custom_sqlalchemy_serialize,
             json_deserializer=self.__custom_sqlalchemy_deserialize,
+            poolclass=QueuePool,
+            pool_size=5,
+            max_overflow=10,
         )
 
         self.__session_factory = sessionmaker(bind=self.__engine)

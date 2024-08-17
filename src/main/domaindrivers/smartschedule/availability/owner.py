@@ -15,3 +15,9 @@ class Owner:
     @classmethod
     def new_one(cls) -> "Owner":
         return Owner(uuid.uuid4())
+
+    def by_none(self) -> bool:
+        return self.none() == self
+
+    def id(self) -> UUID:
+        return self.owner
