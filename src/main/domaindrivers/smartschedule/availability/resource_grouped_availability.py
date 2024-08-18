@@ -3,6 +3,7 @@ from typing import Final
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_availability import ResourceAvailability
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.availability.segment.segment_in_minutes import SegmentInMinutes
 from domaindrivers.smartschedule.availability.segment.segments import Segments
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
@@ -16,7 +17,7 @@ class ResourceGroupedAvailability:
         self.__resource_availabilities = resource_availabilities
 
     @classmethod
-    def of(cls, resource_id: ResourceAvailabilityId, time_slot: TimeSlot) -> "ResourceGroupedAvailability":
+    def of(cls, resource_id: ResourceId, time_slot: TimeSlot) -> "ResourceGroupedAvailability":
         resource_availabilities: list[ResourceAvailability] = list(
             map(
                 lambda segment: ResourceAvailability(
@@ -29,7 +30,7 @@ class ResourceGroupedAvailability:
 
     @classmethod
     def of_with_parent_id(
-        cls, resource_id: ResourceAvailabilityId, time_slot: TimeSlot, parent_id: ResourceAvailabilityId
+        cls, resource_id: ResourceId, time_slot: TimeSlot, parent_id: ResourceId
     ) -> "ResourceGroupedAvailability":
         resource_availabilities: list[ResourceAvailability] = list(
             map(
@@ -65,17 +66,14 @@ class ResourceGroupedAvailability:
     def availabilities(self) -> list[ResourceAvailability]:
         return self.__resource_availabilities
 
-    def owners(self) -> set[Owner]:
-        return set(
-            map(lambda resource_availability: resource_availability.blocked_by(), self.__resource_availabilities)
-        )
-
-    def resource_id(self) -> Optional[ResourceAvailabilityId]:
+    def resource_id(self) -> Optional[ResourceId]:
         # resourceId are the same;
         return Optional(
             next(
-                map(lambda resource_availability: resource_availability.resource_id(), self.__resource_availabilities),
-                None,
+                map(
+                    lambda resource_availability: resource_availability.resource_id(),
+                    self.__resource_availabilities,
+                )
             )
         )
 

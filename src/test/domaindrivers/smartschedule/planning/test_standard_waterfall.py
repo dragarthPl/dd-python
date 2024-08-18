@@ -5,6 +5,7 @@ from typing import Final
 from unittest import TestCase
 
 import pytest
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.demand import Demand
 from domaindrivers.smartschedule.planning.demands import Demands
 from domaindrivers.smartschedule.planning.demands_per_stage import DemandsPerStage
@@ -14,7 +15,6 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -23,9 +23,9 @@ class TestStandardWaterfall(TestCase):
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JAN_1: Final[datetime] = datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
-    RESOURCE_1: Final[ResourceName] = ResourceName("r1")
-    RESOURCE_2: Final[ResourceName] = ResourceName("r2")
-    RESOURCE_4: Final[ResourceName] = ResourceName("r4")
+    RESOURCE_1: Final[ResourceId] = ResourceId.new_one()
+    RESOURCE_2: Final[ResourceId] = ResourceId.new_one()
+    RESOURCE_4: Final[ResourceId] = ResourceId.new_one()
     JAN_1_2: Final[TimeSlot] = TimeSlot(
         datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
         datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),

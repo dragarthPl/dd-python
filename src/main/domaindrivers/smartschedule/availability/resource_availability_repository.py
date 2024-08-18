@@ -7,6 +7,7 @@ from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_availability import ResourceAvailability
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
 from domaindrivers.smartschedule.availability.resource_grouped_availability import ResourceGroupedAvailability
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from sqlalchemy import Result, RowMapping, text
 from sqlalchemy.orm import Session
@@ -43,8 +44,8 @@ class ResourceAvailabilityRepository:
             [
                 {
                     "id": availability.id().resource_availability_id,
-                    "resource_id": availability.resource_id().resource_availability_id,
-                    "resource_parent_id": availability.resource_parent_id().resource_availability_id,
+                    "resource_id": availability.resource_id().get_id(),
+                    "resource_parent_id": availability.resource_parent_id().get_id(),
                     "from_date": availability.segment().since,
                     "to_date": availability.segment().to,
                     "taken_by": None,
@@ -56,9 +57,7 @@ class ResourceAvailabilityRepository:
         )
         self.__session.commit()
 
-    def load_all_within_slot(
-        self, resource_id: ResourceAvailabilityId, segment: TimeSlot
-    ) -> list[ResourceAvailability]:
+    def load_all_within_slot(self, resource_id: ResourceId, segment: TimeSlot) -> list[ResourceAvailability]:
         statement = text(
             """
             select * from availabilities where resource_id = :resource_id
@@ -68,16 +67,14 @@ class ResourceAvailabilityRepository:
         result = self.__session.execute(
             statement,
             {
-                "resource_id": resource_id.resource_availability_id,
+                "resource_id": resource_id.get_id(),
                 "from_date": segment.since,
                 "to_date": segment.to,
             },
         )
         return ResourceAvailabilityRowMapper.row_mapper(result.mappings().all())
 
-    def load_all_by_parent_id_within_slot(
-        self, parent_id: ResourceAvailabilityId, segment: TimeSlot
-    ) -> list[ResourceAvailability]:
+    def load_all_by_parent_id_within_slot(self, parent_id: ResourceId, segment: TimeSlot) -> list[ResourceAvailability]:
         statement = text(
             """
             select * from availabilities where resource_parent_id = :resource_parent_id
@@ -87,7 +84,7 @@ class ResourceAvailabilityRepository:
         result = self.__session.execute(
             statement,
             {
-                "resource_parent_id": parent_id.resource_availability_id,
+                "resource_parent_id": parent_id.get_id(),
                 "from_date": segment.since,
                 "to_date": segment.to,
             },
@@ -207,9 +204,9 @@ class ResourceAvailabilityRowMapper:
     @staticmethod
     def single_row_mapper(row: RowMapping) -> ResourceAvailability:
         resource_availability_id: ResourceAvailabilityId = ResourceAvailabilityId.of(row.get("id"))
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.of(row.get("resource_id"))
+        resource_id: ResourceId = ResourceId.of(row.get("resource_id"))
         segment: TimeSlot = TimeSlot(row.get("from_date"), row.get("to_date"))
-        parent_id: ResourceAvailabilityId = ResourceAvailabilityId.of(row.get("resource_parent_id"))
+        parent_id: ResourceId = ResourceId.of(row.get("resource_parent_id"))
         is_disabled: bool = row.get("disabled")
         result: Owner = None
         owner_id: UUID = row.get("taken_by")

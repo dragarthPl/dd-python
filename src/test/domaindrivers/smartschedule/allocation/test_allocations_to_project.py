@@ -15,7 +15,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_demands_schedule
     ProjectAllocationsDemandsScheduled,
 )
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.allocation.resource_id import ResourceId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -230,11 +230,11 @@ class TestAllocationsToProject(TestCase):
             event.get(), CapabilityReleased(event.get().event_id, self.PROJECT_ID, Demands.none(), self.WHEN)
         )
         self.assertTrue(
-            AllocatedCapability.of(self.ADMIN_ID.id(), Capability.permission("ADMIN"), one_hour_before)
+            AllocatedCapability.of(self.ADMIN_ID.get_id(), Capability.permission("ADMIN"), one_hour_before)
             in allocations.allocations().all
         )
         self.assertTrue(
-            AllocatedCapability.of(self.ADMIN_ID.id(), Capability.permission("ADMIN"), the_rest)
+            AllocatedCapability.of(self.ADMIN_ID.get_id(), Capability.permission("ADMIN"), the_rest)
             in allocations.allocations().all
         )
 

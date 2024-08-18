@@ -3,6 +3,7 @@ from unittest import TestCase
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_availability import ResourceAvailability
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -166,6 +167,6 @@ class TestResourceAvailability(TestCase):
     def _resource_availability(self) -> ResourceAvailability:
         return ResourceAvailability(
             self.resource_availability,
-            ResourceAvailabilityId.new_one(),
+            ResourceId.new_one(),
             TimeSlot.create_daily_time_slot_at_utc(2000, 1, 1),
         )

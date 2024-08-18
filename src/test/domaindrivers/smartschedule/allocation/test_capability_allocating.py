@@ -9,7 +9,7 @@ from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
-from domaindrivers.smartschedule.allocation.resource_id import ResourceId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -46,7 +46,7 @@ class TestCapabilityAllocating(TestCase):
         self.assertTrue(result.is_present())
         summary: ProjectsAllocationsSummary = self.allocation_facade.find_all_projects_allocations()
         self.assertTrue(
-            AllocatedCapability.of(allocatable_resource_id.id(), skill_java, one_day)
+            AllocatedCapability.of(allocatable_resource_id.get_id(), skill_java, one_day)
             in summary.project_allocations.get(project_id).all
         )
         self.assertTrue(demand in summary.demands.get(project_id).all)

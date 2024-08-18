@@ -5,8 +5,8 @@ from typing import Final
 from unittest import TestCase
 
 import pytest
-from domaindrivers.smartschedule.allocation.resource_id import ResourceId
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.planning_facade import PlanningFacade
@@ -14,7 +14,6 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -65,19 +64,19 @@ class TestRD(TestCase):
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("waterfall")
         # and
 
-        r1: ResourceName = ResourceName("r1")
+        r1: ResourceId = ResourceId.new_one()
         java_available_in_january: ResourceId = self.resource_available_for_capability_in_period(
             r1, Capability.skill("JAVA"), self.JANUARY
         )
-        r2: ResourceName = ResourceName("r2")
+        r2: ResourceId = ResourceId.new_one()
         php_available_in_february: ResourceId = self.resource_available_for_capability_in_period(
             r2, Capability.skill("PHP"), self.FEBRUARY
         )
-        r3: ResourceName = ResourceName("r3")
+        r3: ResourceId = ResourceId.new_one()
         csharp_available_in_march: ResourceId = self.resource_available_for_capability_in_period(
             r3, Capability.skill("CSHARP"), self.MARCH
         )
-        all_resources: set[ResourceName] = {r1, r2, r3}
+        all_resources: set[ResourceId] = {r1, r2, r3}
 
         # when
         self.project_facade.define_resources_within_dates(project_id, all_resources, self.JANUARY)
@@ -121,7 +120,7 @@ class TestRD(TestCase):
         self.project_is_not_parallelized(loaded)
 
     def resource_available_for_capability_in_period(
-        self, resource: ResourceName, capability: Capability, slot: TimeSlot
+        self, resource: ResourceId, capability: Capability, slot: TimeSlot
     ) -> ResourceId:
         # todo
         return ResourceId.new_one()

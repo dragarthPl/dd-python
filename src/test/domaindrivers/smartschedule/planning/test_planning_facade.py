@@ -3,6 +3,7 @@ from test.domaindrivers.smartschedule.dependency_resolver import DependencyResol
 from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
 from unittest import TestCase
 
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.chosen_resources import ChosenResources
 from domaindrivers.smartschedule.planning.demand import Demand
 from domaindrivers.smartschedule.planning.demands import Demands
@@ -13,7 +14,6 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -60,8 +60,10 @@ class TestPlanningFacade(TestCase):
 
         # and
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("project", stage1, stage2, stage3)
+
         # when
         loaded: ProjectCard = self.project_facade.load(project_id)
+
         # then
         self.assertEqual("Stage1 | Stage2 | Stage3", loaded.parallelized_stages.print())
 
@@ -110,8 +112,8 @@ class TestPlanningFacade(TestCase):
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("project")
 
         # when
-        needed_resources: set[ResourceName] = {
-            ResourceName("resource1"),
+        needed_resources: set[ResourceId] = {
+            ResourceId.new_one(),
         }
         first_half_of_the_year: TimeSlot = TimeSlot(
             datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
@@ -164,7 +166,11 @@ class TestPlanningFacade(TestCase):
             ),
         }
         loaded: ProjectCard = self.project_facade.load(project_id)
-        self.assertEqual(expected_schedule, loaded.schedule.dates)
+        for key, value in expected_schedule.items():
+            self.assertTrue(
+                loaded.schedule.dates.get(key, {}) == value,
+            )
+        # assertThat(loaded.schedule().dates()).containsExactlyInAnyOrderEntriesOf(expectedSchedule);
 
     def test_can_manually_add_schedule(self) -> None:
         # given
@@ -193,4 +199,8 @@ class TestPlanningFacade(TestCase):
 
         # then
         loaded: ProjectCard = self.project_facade.load(project_id)
-        self.assertEqual(dates, loaded.schedule.dates)
+        for key, value in dates.items():
+            self.assertTrue(
+                loaded.schedule.dates.get(key, {}) == value,
+            )
+        # assertThat(loaded.schedule().dates()).containsExactlyInAnyOrderEntriesOf(dates);

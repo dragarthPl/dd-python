@@ -4,13 +4,14 @@ from typing import Any, Final
 from domaindrivers.smartschedule.availability.blockade import Blockade
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 class ResourceAvailability:
     _id: Final[ResourceAvailabilityId]
-    _resource_id: Final[ResourceAvailabilityId]
-    _resource_parent_id: Final[ResourceAvailabilityId]
+    _resource_id: Final[ResourceId]
+    _resource_parent_id: Final[ResourceId]
     _segment: Final[TimeSlot]
     _blockade: Blockade
     _version: int = 0
@@ -18,9 +19,9 @@ class ResourceAvailability:
     def __init__(
         self,
         availability_id: ResourceAvailabilityId,
-        resource_id: ResourceAvailabilityId,
+        resource_id: ResourceId,
         segment: TimeSlot,
-        resource_parent_id: ResourceAvailabilityId = ResourceAvailabilityId.none(),
+        resource_parent_id: ResourceId = ResourceId.none(),
         blockade: Blockade = Blockade.none(),
         version: int = 0,
     ):
@@ -76,7 +77,7 @@ class ResourceAvailability:
     def segment(self) -> TimeSlot:
         return self._segment
 
-    def resource_id(self) -> ResourceAvailabilityId:
+    def resource_id(self) -> ResourceId:
         return self._resource_id
 
     def __eq__(self, other: Any) -> bool:
@@ -90,5 +91,5 @@ class ResourceAvailability:
 
         return int(m.hexdigest(), 16)
 
-    def resource_parent_id(self) -> ResourceAvailabilityId:
+    def resource_parent_id(self) -> ResourceId:
         return self._resource_parent_id

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import injector
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.demands import Demands
 from domaindrivers.smartschedule.planning.demands_per_stage import DemandsPerStage
 from domaindrivers.smartschedule.planning.parallelization.duration_calculator import DurationCalculator
@@ -42,39 +43,45 @@ class PlanningFacade:
         return self.add_new_project_with_parallel_stages(name, parallelized_stages)
 
     def add_new_project_with_parallel_stages(self, name: str, parallelized_stages: ParallelStagesList) -> ProjectId:
-        project: Project = Project(name=name, parallelized_stages=parallelized_stages)
+        project: Project = Project(name, parallelized_stages)
         self.__project_repository.save(project)
         return project.id
 
+    # @Transactional
     def define_start_date(self, project_id: ProjectId, possible_start_date: datetime) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_schedule(possible_start_date)
 
+    # @Transactional
     def define_project_stages(self, project_id: ProjectId, *stages: Stage) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             parallelized_stages: ParallelStagesList = self.__parallelization.of(set(stages))
             project.define_stages(parallelized_stages)
 
+    # @Transactional
     def add_demands(self, project_id: ProjectId, demands: Demands) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_demands(demands)
 
+    # @Transactional
     def define_demands_per_stage(self, project_id: ProjectId, demands_per_stage: DemandsPerStage) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_demands_per_stage(demands_per_stage)
 
+    # @Transactional
     def define_resources_within_dates(
-        self, project_id: ProjectId, chosen_resources: set[ResourceName], time_boundaries: TimeSlot
+        self, project_id: ProjectId, chosen_resources: set[ResourceId], time_boundaries: TimeSlot
     ) -> None:
         with self.__session.begin_nested():
             self.__plan_chosen_resources_service.define_resources_within_dates(
                 project_id, chosen_resources, time_boundaries
             )
 
+    # @Transactional
     def adjust_stages_to_resource_availability(
         self, project_id: ProjectId, time_boundaries: TimeSlot, *stages: Stage
     ) -> None:
@@ -83,6 +90,7 @@ class PlanningFacade:
                 project_id, time_boundaries, *stages
             )
 
+    # @Transactional
     def plan_critical_stage_with_resource(
         self, project_id: ProjectId, critical_stage: Stage, critical_resource: ResourceName, stage_time_slot: TimeSlot
     ) -> None:
@@ -90,11 +98,13 @@ class PlanningFacade:
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_schedule_stage(critical_stage, stage_time_slot)
 
+    # @Transactional
     def plan_critical_stage(self, project_id: ProjectId, critical_stage: Stage, stage_time_slot: TimeSlot) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_schedule_stage(critical_stage, stage_time_slot)
 
+    # @Transactional
     def define_manual_schedule(self, project_id: ProjectId, schedule: Schedule) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()

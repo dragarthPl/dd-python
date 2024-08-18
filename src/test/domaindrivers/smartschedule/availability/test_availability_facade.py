@@ -5,8 +5,8 @@ from unittest import TestCase
 
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.owner import Owner
-from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
 from domaindrivers.smartschedule.availability.resource_grouped_availability import ResourceGroupedAvailability
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -21,7 +21,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_can_create_availability_slots(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
 
         # when
@@ -32,10 +32,10 @@ class TestAvailabilityFacade(TestCase):
 
     def test_can_create_new_availability_slots_with_parent_id(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        resource_id_2: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        parent_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        different_parent_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
+        resource_id_2: ResourceId = ResourceId.new_one()
+        parent_id: ResourceId = ResourceId.new_one()
+        different_parent_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
 
         # when
@@ -48,7 +48,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_can_block_availabilities(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         owner: Owner = Owner.new_one()
         self.availability_facade.create_resource_slots(resource_id, one_day)
@@ -64,7 +64,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_can_disable_availabilities(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         owner: Owner = Owner.new_one()
         self.availability_facade.create_resource_slots(resource_id, one_day)
@@ -80,7 +80,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_cant_block_even_when_just_small_segment_of_requested_slot_is_blocked(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         owner: Owner = Owner.new_one()
         self.availability_facade.create_resource_slots(resource_id, one_day)
@@ -98,7 +98,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_can_release_availability(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         fifteen_minutes: TimeSlot = TimeSlot(one_day.since, one_day.since + timedelta(minutes=15))
         owner: Owner = Owner.new_one()
@@ -116,7 +116,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_cant_release_even_when_just_part_of_slot_is_owned_by_the_requester(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         jan_1: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         jan_2: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 2)
         jan_1_2: TimeSlot = TimeSlot(jan_1.since, jan_2.to)
@@ -138,7 +138,7 @@ class TestAvailabilityFacade(TestCase):
 
     def test_one_segment_can_be_taken_by_someone_else_after_realising(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
         fifteen_minutes: TimeSlot = TimeSlot(one_day.since, one_day.since + timedelta(minutes=15))
         owner: Owner = Owner.new_one()

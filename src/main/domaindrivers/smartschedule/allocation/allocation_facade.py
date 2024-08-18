@@ -11,7 +11,7 @@ from domaindrivers.smartschedule.allocation.project_allocations import ProjectAl
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
-from domaindrivers.smartschedule.allocation.resource_id import ResourceId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional

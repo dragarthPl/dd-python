@@ -9,27 +9,30 @@ from domaindrivers.utils.serializable import Serializable
 class ResourceId(Serializable):
     __resource_id: UUID
 
+    def __init__(self, resource_id: UUID = None):
+        self.__resource_id = resource_id
+
     @classmethod
     def new_one(cls) -> "ResourceId":
         return cls(uuid.uuid4())
 
-    def __init__(self, resource_id: UUID):
-        self.__resource_id = resource_id
+    @classmethod
+    def none(cls) -> "ResourceId":
+        return cls(None)
 
     @classmethod
-    def from_key(cls, key: UUID) -> "ResourceId":
-        return cls(key)
+    def of(cls, resource_id: UUID) -> "ResourceId":
+        if not resource_id:
+            return cls.none()
+        return cls(resource_id)
 
-    def id(self) -> UUID:
+    def get_id(self) -> UUID:
         return self.__resource_id
-
-    def __composite_values__(self) -> tuple[UUID]:
-        return (self.__resource_id,)
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, ResourceId):
             return False
-        return self.__resource_id == other.__resource_id
+        return self.__resource_id == other.get_id()
 
     def __hash__(self) -> int:
         m = hashlib.md5()

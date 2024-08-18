@@ -8,6 +8,7 @@ from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_availability import ResourceAvailability
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
 from domaindrivers.smartschedule.availability.resource_availability_repository import ResourceAvailabilityRepository
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -25,7 +26,7 @@ class TestResourceAvailabilityOptimisticLocking(TestCase):
     def test_update_bumps_version(self) -> None:
         # given
         resource_availability_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         resource_availability: ResourceAvailability = ResourceAvailability(
             resource_availability_id, resource_id, self.ONE_MONTH
         )
@@ -42,7 +43,7 @@ class TestResourceAvailabilityOptimisticLocking(TestCase):
     def test_cant_update_concurrently(self) -> None:
         # given
         resource_availability_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         resource_availability: ResourceAvailability = ResourceAvailability(
             resource_availability_id, resource_id, self.ONE_MONTH
         )
