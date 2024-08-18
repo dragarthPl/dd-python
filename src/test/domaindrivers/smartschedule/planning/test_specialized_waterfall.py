@@ -5,7 +5,7 @@ from typing import Final
 from unittest import TestCase
 
 import pytest
-from domaindrivers.smartschedule.allocation.resource_id import ResourceId
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.planning_facade import PlanningFacade
 from domaindrivers.smartschedule.planning.project_id import ProjectId
@@ -102,6 +102,6 @@ class TestSpecializedWaterfall(TestCase):
         pass
 
     def resource_available_for_capability_in_period(
-        self, resource: ResourceName, capability: Capability, slot: TimeSlot
+        self, resource: ResourceId, capability: Capability, slot: TimeSlot
     ) -> ResourceId:
         return None

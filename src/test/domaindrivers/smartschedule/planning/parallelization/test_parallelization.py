@@ -1,19 +1,19 @@
 from typing import Final
 from unittest import TestCase
 
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.parallelization.stage_parallelization import StageParallelization
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 
 
 class TestParallelization(TestCase):
     stage_parallelization: Final[StageParallelization] = StageParallelization()
 
-    LEON: Final[ResourceName] = ResourceName("Leon")
-    ERYK: Final[ResourceName] = ResourceName("Eric")
-    SLAWEK: Final[ResourceName] = ResourceName("Sławek")
-    KUBA: Final[ResourceName] = ResourceName("Kuba")
+    LEON: Final[ResourceId] = ResourceId.new_one()
+    ERYK: Final[ResourceId] = ResourceId.new_one()
+    SLAWEK: Final[ResourceId] = ResourceId.new_one()
+    KUBA: Final[ResourceId] = ResourceId.new_one()
 
     def test_everything_can_be_done_in_parallel_when_there_are_no_dependencies(self) -> None:
         # given

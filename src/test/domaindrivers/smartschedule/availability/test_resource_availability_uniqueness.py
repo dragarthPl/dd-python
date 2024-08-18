@@ -6,6 +6,7 @@ from unittest import TestCase
 from domaindrivers.smartschedule.availability.resource_availability import ResourceAvailability
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
 from domaindrivers.smartschedule.availability.resource_availability_repository import ResourceAvailabilityRepository
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from sqlalchemy.exc import IntegrityError
 
@@ -23,8 +24,8 @@ class TestResourceAvailabilityUniqueness(TestCase):
 
     def test_cant_save_two_availabilities_with_same_resource_id_and_segment(self) -> None:
         # given
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        another_resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
+        another_resource_id: ResourceId = ResourceId.new_one()
         resource_availability_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
 
         # when

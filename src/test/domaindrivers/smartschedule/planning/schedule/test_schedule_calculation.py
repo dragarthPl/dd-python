@@ -4,11 +4,11 @@ from unittest import TestCase
 
 from domaindrivers.smartschedule.availability.calendar import Calendar
 from domaindrivers.smartschedule.availability.calendars import Calendars
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages import ParallelStages
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 from .assertions.schedule_assert import ScheduleAssert
@@ -151,9 +151,9 @@ class TestScheduleCalculation(TestCase):
 
     def test_can_adjust_schedule_to_availability_of_needed_resources(self) -> None:
         # given
-        r1: ResourceName = ResourceName("r1")
-        r2: ResourceName = ResourceName("r2")
-        r3: ResourceName = ResourceName("r3")
+        r1: ResourceId = ResourceId.new_one()
+        r2: ResourceId = ResourceId.new_one()
+        r3: ResourceId = ResourceId.new_one()
         # and
         stage_1: Stage = Stage.from_name("Stage1").of_duration(timedelta(days=3)).with_chosen_resource_capabilities(r1)
         stage_2: Stage = (

@@ -48,7 +48,14 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("parallelization")
                 .should_only()
                 .access_layers_that()
-                .are_named(["sorter", "shared", "utils"])
+                .are_named(
+                    [
+                        "sorter",
+                        # "shared",
+                        "utils",
+                        "availability",
+                    ]
+                )
             ),
             (
                 LayerRule()
@@ -69,7 +76,7 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named(
                     [
                         "shared",
-                        # "availability",
+                        "availability",
                         "cashflow",
                         "simulation",
                         "optimization",

@@ -3,14 +3,14 @@ from datetime import timedelta
 from typing import Any
 
 from attr import frozen
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 
 
 @frozen
 class Stage:
     stage_name: str
     dependencies: set["Stage"]
-    resources: set[ResourceName]
+    resources: set[ResourceId]
     duration: timedelta
 
     def of_duration(self, duration: timedelta) -> "Stage":
@@ -30,8 +30,8 @@ class Stage:
     def name(self) -> str:
         return self.stage_name
 
-    def with_chosen_resource_capabilities(self, *resources: ResourceName) -> "Stage":
-        collect: set[ResourceName] = set(resources)
+    def with_chosen_resource_capabilities(self, *resources: ResourceId) -> "Stage":
+        collect: set[ResourceId] = set(resources)
         return Stage(self.stage_name, self.dependencies, collect, self.duration)
 
     def __eq__(self, other: Any) -> bool:

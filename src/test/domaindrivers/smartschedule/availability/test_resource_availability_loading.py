@@ -6,6 +6,7 @@ from unittest import TestCase
 from domaindrivers.smartschedule.availability.resource_availability import ResourceAvailability
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
 from domaindrivers.smartschedule.availability.resource_availability_repository import ResourceAvailabilityRepository
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -23,7 +24,7 @@ class TestResourceAvailabilityLoading(TestCase):
     def test_can_save_and_load_by_id(self) -> None:
         # given
         resource_availability_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
-        resource_id: ResourceAvailabilityId = ResourceAvailabilityId.new_one()
+        resource_id: ResourceId = ResourceId.new_one()
         resource_availability: ResourceAvailability = ResourceAvailability(
             resource_availability_id, resource_id, self.ONE_MONTH
         )

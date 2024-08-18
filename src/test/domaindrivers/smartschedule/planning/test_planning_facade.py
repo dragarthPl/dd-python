@@ -3,6 +3,7 @@ from test.domaindrivers.smartschedule.dependency_resolver import DependencyResol
 from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
 from unittest import TestCase
 
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.chosen_resources import ChosenResources
 from domaindrivers.smartschedule.planning.demand import Demand
 from domaindrivers.smartschedule.planning.demands import Demands
@@ -13,7 +14,6 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -112,8 +112,8 @@ class TestPlanningFacade(TestCase):
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("project")
 
         # when
-        needed_resources: set[ResourceName] = {
-            ResourceName("resource1"),
+        needed_resources: set[ResourceId] = {
+            ResourceId.new_one(),
         }
         first_half_of_the_year: TimeSlot = TimeSlot(
             datetime.strptime("2021-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),

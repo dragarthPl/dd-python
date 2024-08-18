@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import cast
 
 import injector
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.demands import Demands
 from domaindrivers.smartschedule.planning.demands_per_stage import DemandsPerStage
 from domaindrivers.smartschedule.planning.parallelization.duration_calculator import DurationCalculator
@@ -74,7 +75,7 @@ class PlanningFacade:
 
     # @Transactional
     def define_resources_within_dates(
-        self, project_id: ProjectId, chosen_resources: set[ResourceName], time_boundaries: TimeSlot
+        self, project_id: ProjectId, chosen_resources: set[ResourceId], time_boundaries: TimeSlot
     ) -> None:
         with self.__session.begin_nested():
             self.__plan_chosen_resources_service.define_resources_within_dates(
