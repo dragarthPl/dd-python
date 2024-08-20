@@ -4,6 +4,7 @@ from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfigu
 from unittest import TestCase
 
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
+from domaindrivers.smartschedule.availability.calendar import Calendar
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_grouped_availability import ResourceGroupedAvailability
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
@@ -28,7 +29,9 @@ class TestAvailabilityFacade(TestCase):
         self.availability_facade.create_resource_slots(resource_id, one_day)
 
         # then
-        self.assertEqual(96, self.availability_facade.find(resource_id, one_day).size())
+        entire_month: TimeSlot = TimeSlot.create_monthly_time_slot_at_utc(2021, 1)
+        monthly_calendar: Calendar = self.availability_facade.load_calendar(resource_id, entire_month)
+        self.assertEqual(monthly_calendar, Calendar.with_available_slots(resource_id, one_day))
 
     def test_can_create_new_availability_slots_with_parent_id(self) -> None:
         # given
@@ -58,9 +61,10 @@ class TestAvailabilityFacade(TestCase):
 
         # then
         self.assertTrue(result)
-        resource_availabilities: ResourceGroupedAvailability = self.availability_facade.find(resource_id, one_day)
-        self.assertEqual(96, resource_availabilities.size())
-        self.assertTrue(resource_availabilities.blocked_entirely_by(owner))
+        entire_month: TimeSlot = TimeSlot.create_monthly_time_slot_at_utc(2021, 1)
+        monthly_calendar: Calendar = self.availability_facade.load_calendar(resource_id, entire_month)
+        self.assertTrue(len(monthly_calendar.available_slots()) == 0 or monthly_calendar.available_slots() is None)
+        self.assertEqual(monthly_calendar.taken_by(owner), [one_day])
 
     def test_can_disable_availabilities(self) -> None:
         # given
@@ -154,7 +158,9 @@ class TestAvailabilityFacade(TestCase):
 
         # then
         self.assertTrue(result)
-        resource_availability: ResourceGroupedAvailability = self.availability_facade.find(resource_id, one_day)
-        self.assertEqual(resource_availability.size(), 96)
-        self.assertEqual(len(resource_availability.find_blocked_by(owner)), 95)
-        self.assertEqual(len(resource_availability.find_blocked_by(new_requester)), 1)
+        daily_calendar: Calendar = self.availability_facade.load_calendar(resource_id, one_day)
+        self.assertTrue(not daily_calendar.available_slots())
+        taken_by_owner = daily_calendar.taken_by(owner)
+        leftover = one_day.leftover_after_removing_common_with(fifteen_minutes)
+        self.assertEqual(taken_by_owner, leftover)
+        self.assertEqual(daily_calendar.taken_by(new_requester), [fifteen_minutes])

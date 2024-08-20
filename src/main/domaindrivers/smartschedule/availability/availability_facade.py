@@ -1,8 +1,11 @@
 from typing import cast, Final
 
 import injector
+from domaindrivers.smartschedule.availability.calendar import Calendar
+from domaindrivers.smartschedule.availability.calendars import Calendars
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_availability_id import ResourceAvailabilityId
+from domaindrivers.smartschedule.availability.resource_availability_read_model import ResourceAvailabilityReadModel
 from domaindrivers.smartschedule.availability.resource_availability_repository import ResourceAvailabilityRepository
 from domaindrivers.smartschedule.availability.resource_grouped_availability import ResourceGroupedAvailability
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
@@ -14,12 +17,19 @@ from sqlalchemy.orm import Session
 
 class AvailabilityFacade:
     __availability_repository: Final[ResourceAvailabilityRepository]
+    __availability_read_model: Final[ResourceAvailabilityReadModel]
     __session: Session
 
     @injector.inject
-    def __init__(self, session: Session, resource_availability_repository: ResourceAvailabilityRepository):
+    def __init__(
+        self,
+        session: Session,
+        resource_availability_repository: ResourceAvailabilityRepository,
+        resource_availability_read_model: ResourceAvailabilityReadModel,
+    ):
         self.__session = session
         self.__availability_repository = resource_availability_repository
+        self.__availability_read_model = resource_availability_read_model
 
     def create_resource_slots(self, resource_id: ResourceId, timeslot: TimeSlot) -> None:
         grouped_availability: ResourceGroupedAvailability = ResourceGroupedAvailability.of(resource_id, timeslot)
@@ -73,6 +83,14 @@ class AvailabilityFacade:
     def find_grouped(self, resource_id: ResourceId, within: TimeSlot) -> ResourceGroupedAvailability:
         normalized: TimeSlot = Segments.normalize_to_segment_boundaries(within, SegmentInMinutes.default_segment())
         return ResourceGroupedAvailability(self.__availability_repository.load_all_within_slot(resource_id, normalized))
+
+    def load_calendar(self, resource_id: ResourceId, within: TimeSlot) -> Calendar:
+        normalized: TimeSlot = Segments.normalize_to_segment_boundaries(within, SegmentInMinutes.default_segment())
+        return self.__availability_read_model.load(resource_id, normalized)
+
+    def load_calendars(self, resources: set[ResourceId], within: TimeSlot) -> Calendars:
+        normalized: TimeSlot = Segments.normalize_to_segment_boundaries(within, SegmentInMinutes.default_segment())
+        return self.__availability_read_model.load_all(resources, normalized)
 
     def find(self, resource_id: ResourceId, within: TimeSlot) -> ResourceGroupedAvailability:
         normalized: TimeSlot = Segments.normalize_to_segment_boundaries(within, SegmentInMinutes.default_segment())
