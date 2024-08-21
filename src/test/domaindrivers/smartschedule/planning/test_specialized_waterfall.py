@@ -5,13 +5,13 @@ from typing import Final
 from unittest import TestCase
 
 import pytest
+import pytz
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.planning_facade import PlanningFacade
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -20,24 +20,24 @@ class TestSpecializedWaterfall(TestCase):
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JAN_1_2: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_1_4: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_1_5: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_1_6: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-06T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-06T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_4_8: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-08T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-08T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
 
     project_facade: PlanningFacade
@@ -61,7 +61,7 @@ class TestSpecializedWaterfall(TestCase):
         )
 
         # and
-        critical_resource_name: ResourceName = ResourceName("criticalResourceName")
+        critical_resource_name: ResourceId = ResourceId.new_one()
         critical_capability_availability: ResourceId = self.resource_available_for_capability_in_period(
             critical_resource_name, Capability.skill("JAVA"), self.JAN_1_6
         )
@@ -102,6 +102,6 @@ class TestSpecializedWaterfall(TestCase):
         pass
 
     def resource_available_for_capability_in_period(
-        self, resource: ResourceName, capability: Capability, slot: TimeSlot
+        self, resource: ResourceId, capability: Capability, slot: TimeSlot
     ) -> ResourceId:
         return None

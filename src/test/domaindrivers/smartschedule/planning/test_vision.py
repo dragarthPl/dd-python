@@ -5,6 +5,7 @@ from typing import Final
 from unittest import TestCase
 
 import pytest
+import pytz
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.demand import Demand
 from domaindrivers.smartschedule.planning.demands import Demands
@@ -21,18 +22,18 @@ class TestVision(TestCase):
     SQL_SCRIPTS: tuple[str] = ("schema-planning.sql",)
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
-    JAN_1: Final[datetime] = datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
+    JAN_1: Final[datetime] = datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC)
     JAN_1_2: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_2_5: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_2_12: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-12T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-02T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-12T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     RESOURCE_1: Final[ResourceId] = ResourceId.new_one()
     RESOURCE_2: Final[ResourceId] = ResourceId.new_one()

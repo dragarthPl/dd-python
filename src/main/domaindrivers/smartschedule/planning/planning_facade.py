@@ -14,7 +14,6 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.project_repository import ProjectRepository
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
-from domaindrivers.smartschedule.shared.resource_name import ResourceName
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from sqlalchemy.orm import Session
 
@@ -92,7 +91,7 @@ class PlanningFacade:
 
     # @Transactional
     def plan_critical_stage_with_resource(
-        self, project_id: ProjectId, critical_stage: Stage, critical_resource: ResourceName, stage_time_slot: TimeSlot
+        self, project_id: ProjectId, critical_stage: Stage, resource_id: ResourceId, stage_time_slot: TimeSlot
     ) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()

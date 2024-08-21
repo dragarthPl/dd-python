@@ -4,7 +4,7 @@ from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfigu
 from typing import Final
 from unittest import TestCase
 
-import pytest
+import pytz
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.parallelization.parallel_stages_list import ParallelStagesList
@@ -18,36 +18,36 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 class TestRD(TestCase):
-    SQL_SCRIPTS: tuple[str] = ("schema-planning.sql",)
+    SQL_SCRIPTS: tuple[str, ...] = ("schema-planning.sql", "schema-availability.sql")
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JANUARY: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     FEBRUARY: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-02-28T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-02-28T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     MARCH: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     Q1: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_1_4: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     FEB_2_16: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-02-16T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-02-16T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     MAR_1_6: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-03-06T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-03-06T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
 
     project_facade: PlanningFacade
@@ -58,7 +58,6 @@ class TestRD(TestCase):
         self.project_facade = dependency_resolver.resolve_dependency(PlanningFacade)
         self.availability_facade = dependency_resolver.resolve_dependency(AvailabilityFacade)
 
-    @pytest.mark.skip(reason="not implemented yet")
     def test_research_and_development_project_process(self) -> None:
         # given
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("waterfall")
@@ -114,6 +113,10 @@ class TestRD(TestCase):
             "Stage3": self.MAR_1_6,
         }
         for key, value in has_stage_with_slots.items():
+            print(key)
+            print(value)
+            print("*" * 100)
+            print(schedule.dates.get(key, {}))
             self.assertTrue(
                 schedule.dates.get(key, {}) == value,
             )
@@ -122,7 +125,7 @@ class TestRD(TestCase):
     def resource_available_for_capability_in_period(
         self, resource: ResourceId, capability: Capability, slot: TimeSlot
     ) -> ResourceId:
-        # todo
+        self.availability_facade.create_resource_slots(resource, slot)
         return ResourceId.new_one()
 
     def project_is_not_parallelized(self, loaded: ProjectCard) -> None:
