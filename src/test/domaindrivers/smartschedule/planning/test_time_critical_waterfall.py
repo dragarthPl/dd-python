@@ -5,6 +5,7 @@ from typing import Final
 from unittest import TestCase
 
 import pytest
+import pytz
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.planning_facade import PlanningFacade
 from domaindrivers.smartschedule.planning.project_id import ProjectId
@@ -17,16 +18,16 @@ class TestTimeCriticalWaterfall(TestCase):
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JAN_1_5: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-05T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_1_3: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-03T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-03T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
     JAN_1_4: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
-        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ"),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
     )
 
     project_facade: PlanningFacade
