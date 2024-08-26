@@ -52,3 +52,6 @@ class Stage:
         m.update(str(self.duration).encode("utf-8"))
 
         return int(m.hexdigest(), 16)
+
+    def to_string(self) -> str:
+        return self.stage_name
