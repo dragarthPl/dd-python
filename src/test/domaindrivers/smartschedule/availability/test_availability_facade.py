@@ -66,6 +66,18 @@ class TestAvailabilityFacade(TestCase):
         self.assertTrue(len(monthly_calendar.available_slots()) == 0 or monthly_calendar.available_slots() is None)
         self.assertEqual(monthly_calendar.taken_by(owner), [one_day])
 
+    def test_cant_block_when_no_slots_created(self) -> None:
+        # given
+        resource_id: ResourceId = ResourceId.new_one()
+        one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        owner: Owner = Owner.new_one()
+
+        # when
+        result: bool = self.availability_facade.block(resource_id, one_day, owner)
+
+        # then
+        self.assertFalse(result)
+
     def test_can_disable_availabilities(self) -> None:
         # given
         resource_id: ResourceId = ResourceId.new_one()
@@ -81,6 +93,18 @@ class TestAvailabilityFacade(TestCase):
         resource_availabilities: ResourceGroupedAvailability = self.availability_facade.find(resource_id, one_day)
         self.assertEqual(96, resource_availabilities.size())
         self.assertTrue(resource_availabilities.is_disabled_entirely_by(owner))
+
+    def test_cant_disable_when_no_slots_created(self) -> None:
+        # given
+        resource_id: ResourceId = ResourceId.new_one()
+        one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        owner: Owner = Owner.new_one()
+
+        # when
+        result: bool = self.availability_facade.disable(resource_id, one_day, owner)
+
+        # then
+        self.assertFalse(result)
 
     def test_cant_block_even_when_just_small_segment_of_requested_slot_is_blocked(self) -> None:
         # given
@@ -117,6 +141,18 @@ class TestAvailabilityFacade(TestCase):
         self.assertTrue(result)
         resource_availability: ResourceGroupedAvailability = self.availability_facade.find(resource_id, one_day)
         self.assertTrue(resource_availability.is_entirely_available())
+
+    def test_cant_release_when_no_slots_created(self) -> None:
+        # given
+        resource_id: ResourceId = ResourceId.new_one()
+        one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        owner: Owner = Owner.new_one()
+
+        # when
+        result: bool = self.availability_facade.release(resource_id, one_day, owner)
+
+        # then
+        self.assertFalse(result)
 
     def test_cant_release_even_when_just_part_of_slot_is_owned_by_the_requester(self) -> None:
         # given
