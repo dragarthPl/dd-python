@@ -91,3 +91,6 @@ class ResourceGroupedAvailability:
 
     def is_entirely_available(self) -> bool:
         return any(map(lambda ra: ra.blocked_by().by_none(), self.__resource_availabilities))
+
+    def has_no_slots(self) -> bool:
+        return not self.__resource_availabilities

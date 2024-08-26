@@ -128,18 +128,22 @@ class ResourceAvailabilityRepository:
            WHERE id = :id AND version = :version
         """
         )
+        update_availabilities_list = [
+            {
+                "taken_by": ra.blocked_by().id(),
+                "disabled": ra.is_disabled(),
+                "new_version": ra.version() + 1,
+                "id": ra.id().resource_availability_id,
+                "version": ra.version(),
+            }
+            for ra in resource_availabilities
+        ]
+        if not update_availabilities_list:
+            return True
+
         updates = self.__session.execute(
             statement,
-            [
-                {
-                    "taken_by": ra.blocked_by().id(),
-                    "disabled": ra.is_disabled(),
-                    "new_version": ra.version() + 1,
-                    "id": ra.id().resource_availability_id,
-                    "version": ra.version(),
-                }
-                for ra in resource_availabilities
-            ],
+            update_availabilities_list,
         )
         self.__session.commit()
         return bool(updates.rowcount == len(resource_availabilities))  # type: ignore
