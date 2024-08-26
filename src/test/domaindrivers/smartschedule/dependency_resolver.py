@@ -5,6 +5,9 @@ from domaindrivers.smartschedule.allocation.allocation_configuration import Allo
 from domaindrivers.smartschedule.allocation.cashflow.cash_flow_configuration import CashFlowConfiguration
 from domaindrivers.smartschedule.availability.availability_configuration import AvailabilityConfiguration
 from domaindrivers.smartschedule.planning.planning_configuration import PlanningConfiguration
+from domaindrivers.smartschedule.resource.device.device_configuration import DeviceConfiguration
+from domaindrivers.smartschedule.resource.employees.employee_configuration import EmployeeConfiguration
+from domaindrivers.smartschedule.resource.resource_configuration import ResourceConfiguration
 from domaindrivers.storage.database import DatabaseModule
 from injector import Injector
 from testcontainers.postgres import PostgresContainer
@@ -28,6 +31,9 @@ class DependencyResolverForTest:
                 AllocationConfiguration(),
                 CashFlowConfiguration(),
                 AvailabilityConfiguration(),
+                DeviceConfiguration(),
+                EmployeeConfiguration(),
+                ResourceConfiguration(),
             ]
         )
 

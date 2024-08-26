@@ -8,7 +8,7 @@ from sqlalchemy.orm import composite, registry
 
 mapper_registry = registry()
 
-projects_table = Table(
+cashflows_table = Table(
     "cashflows",
     mapper_registry.metadata,
     Column("project_allocations_id", UUID(), primary_key=True),
@@ -19,20 +19,20 @@ projects_table = Table(
 
 mapper_registry.map_imperatively(
     Cashflow,
-    projects_table,
+    cashflows_table,
     column_prefix="_",
     properties={
         "_project_id": composite(
             ProjectAllocationsId,
-            projects_table.c.project_allocations_id,
+            cashflows_table.c.project_allocations_id,
         ),
         "_cost_value": composite(
             Cost,
-            projects_table.c.cost,
+            cashflows_table.c.cost,
         ),
         "_income_value": composite(
             Income,
-            projects_table.c.income,
+            cashflows_table.c.income,
         ),
     },
 )
