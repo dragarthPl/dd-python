@@ -1,10 +1,14 @@
-from attr import frozen
+from typing import Generic, TypeVar
+
+from domaindrivers.smartschedule.sorter.edge import Edge
 from domaindrivers.smartschedule.sorter.node import Node
 
+T = TypeVar("T")
 
-class FeedbackArcSeOnGraph:
+
+class FeedbackArcSeOnGraph(Generic[T]):
     @classmethod
-    def calculate(cls, initial_nodes: list["Node[str]"]) -> list["Edge"]:
+    def calculate(cls, initial_nodes: list["Node[T]"]) -> list["Edge"]:
         adjacency_list: dict[int, list[int]] = cls.__create_adjacency_list(initial_nodes)
         v: int = len(adjacency_list)
         feedback_edges: list[Edge] = []
@@ -22,7 +26,7 @@ class FeedbackArcSeOnGraph:
         return feedback_edges
 
     @staticmethod
-    def __create_adjacency_list(initial_nodes: list["Node[str]"]) -> dict[int, list[int]]:
+    def __create_adjacency_list(initial_nodes: list["Node[T]"]) -> dict[int, list[int]]:
         adjacency_list: dict[int, list[int]] = {}
         for i, node in enumerate(initial_nodes):
             adjacency_list[i + 1] = []
@@ -33,12 +37,3 @@ class FeedbackArcSeOnGraph:
                 dependencies.append(initial_nodes.index(dependency) + 1)
             adjacency_list[i + 1] = dependencies
         return adjacency_list
-
-
-@frozen
-class Edge:
-    source: int
-    target: int
-
-    def __str__(self) -> str:
-        return f"({self.source} -> {self.target})"

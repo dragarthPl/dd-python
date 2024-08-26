@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from domaindrivers.smartschedule.sorter.feedback_arc_se_on_graph import Edge, FeedbackArcSeOnGraph
+from domaindrivers.smartschedule.sorter.edge import Edge
+from domaindrivers.smartschedule.sorter.feedback_arc_se_on_graph import FeedbackArcSeOnGraph
 from domaindrivers.smartschedule.sorter.node import Node
 
 
@@ -18,7 +19,7 @@ class TestFeedbackArcSetOnGraph(TestCase):
         node3 = node3.depends_on(node1)
 
         # when
-        to_remove: list[Edge] = FeedbackArcSeOnGraph.calculate([node1, node2, node3, node4])
+        to_remove: list[Edge] = FeedbackArcSeOnGraph[str].calculate([node1, node2, node3, node4])
 
         self.assertIn(Edge(4, 3), to_remove)
         self.assertIn(Edge(3, 1), to_remove)
@@ -39,7 +40,7 @@ class TestFeedbackArcSetOnGraph(TestCase):
         node1 = node1.depends_on(node4)
 
         # when
-        to_remove: list[Edge] = FeedbackArcSeOnGraph.calculate([node1, node2, node3, node4])
+        to_remove: list[Edge] = FeedbackArcSeOnGraph[str].calculate([node1, node2, node3, node4])
 
         # then
         self.assertListEqual(to_remove, [])
