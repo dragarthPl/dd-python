@@ -11,6 +11,7 @@ from domaindrivers.smartschedule.allocation.project_allocations import ProjectAl
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
+from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
@@ -21,10 +22,17 @@ from sqlalchemy.orm import Session
 class AllocationFacade:
     __session: Session
     __project_allocations_repository: Final[ProjectAllocationsRepository]
+    __availability_facade: Final[AvailabilityFacade]
 
-    def __init__(self, session: Session, project_allocations_repository: ProjectAllocationsRepository):
+    def __init__(
+        self,
+        session: Session,
+        project_allocations_repository: ProjectAllocationsRepository,
+        availability_facade: AvailabilityFacade,
+    ):
         self.__session: Session = session
         self.__project_allocations_repository = project_allocations_repository
+        self.__availability_facade = availability_facade
 
     # @Transactional
     def create_allocation(self, time_slot: TimeSlot, scheduled_demands: Demands) -> ProjectAllocationsId:
@@ -47,6 +55,7 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, resource_id: ResourceId, capability: Capability, time_slot: TimeSlot
     ) -> Optional[UUID]:
         with self.__session.begin_nested():
+            # TODO WHAT TO DO WITH AVAILABILITY HERE? - implement
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
@@ -61,6 +70,7 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, allocatable_capability_id: UUID, time_slot: TimeSlot
     ) -> bool:
         with self.__session.begin_nested():
+            # TODO WHAT TO DO WITH AVAILABILITY HERE? - just think about it, don't implement
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
