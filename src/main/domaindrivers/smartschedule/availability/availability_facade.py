@@ -42,31 +42,34 @@ class AvailabilityFacade:
         )
         self.__availability_repository.save_new_resource_grouped_availability(grouped_availability)
 
-    # @Transactional
     def block(self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner) -> bool:
         with self.__session.begin_nested():
             to_block: ResourceGroupedAvailability = self.find_grouped(resource_id, time_slot)
             return self.__block(requester, to_block)
 
     def __block(self, requester: Owner, to_block: ResourceGroupedAvailability) -> bool:
+        if to_block.has_no_slots():
+            return False
         result: bool = to_block.block(requester)
         if result:
             return self.__availability_repository.save_checking_version_by_resource_grouped_availability(to_block)
         return bool(result)
 
-    # @Transactional
     def release(self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner) -> bool:
         with self.__session.begin_nested():
             to_release: ResourceGroupedAvailability = self.find_grouped(resource_id, time_slot)
+            if to_release.has_no_slots():
+                return False
             result: bool = to_release.release(requester)
             if result:
-                self.__availability_repository.save_checking_version_by_resource_grouped_availability(to_release)
+                return self.__availability_repository.save_checking_version_by_resource_grouped_availability(to_release)
             return result
 
-    # @Transactional
     def disable(self, resource_id: ResourceId, time_slot: TimeSlot, requester: Owner) -> bool:
         with self.__session.begin_nested():
             to_disable: ResourceGroupedAvailability = self.find_grouped(resource_id, time_slot)
+            if to_disable.has_no_slots():
+                return False
             result: bool = to_disable.disable(requester)
             if result:
                 result = self.__availability_repository.save_checking_version_by_resource_grouped_availability(

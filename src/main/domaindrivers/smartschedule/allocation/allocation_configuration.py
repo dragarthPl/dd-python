@@ -6,6 +6,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_repository impor
 from domaindrivers.smartschedule.allocation.project_allocations_repository_sqlalchemy import (
     ProjectAllocationsRepositorySqlalchemy,
 )
+from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from injector import Module, provider, singleton
 from sqlalchemy.orm import Session
 
@@ -24,5 +25,6 @@ class AllocationConfiguration(Module):
         self,
         session: Session,
         project_allocations_repository: ProjectAllocationsRepository,
+        availability_facade: AvailabilityFacade,
     ) -> AllocationFacade:
-        return AllocationFacade(session, project_allocations_repository)
+        return AllocationFacade(session, project_allocations_repository, availability_facade)
