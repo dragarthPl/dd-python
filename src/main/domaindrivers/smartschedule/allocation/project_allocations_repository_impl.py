@@ -16,7 +16,6 @@ class ProjectAllocationsRepositoryImpl(ProjectAllocationsRepository):  # type: i
 
     def save(self, project: ProjectAllocations) -> None:
         self.session.add(project)
-        self.session.commit()
 
     def find_by_id(self, project_id: ProjectAllocationsId) -> Optional[ProjectAllocations]:
         return Optional(
