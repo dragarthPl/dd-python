@@ -145,7 +145,6 @@ class ResourceAvailabilityRepository:
             statement,
             update_availabilities_list,
         )
-        self.__session.commit()
         return bool(updates.rowcount == len(resource_availabilities))  # type: ignore
 
     def load_by_id(self, availability_id: ResourceAvailabilityId) -> ResourceAvailability:

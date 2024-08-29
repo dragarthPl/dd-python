@@ -12,6 +12,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_id import Projec
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
+from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
@@ -55,7 +56,9 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, resource_id: ResourceId, capability: Capability, time_slot: TimeSlot
     ) -> Optional[UUID]:
         with self.__session.begin_nested():
-            # TODO WHAT TO DO WITH AVAILABILITY HERE? - implement
+            # yes, one transaction crossing 2 modules.
+            if not self.__availability_facade.block(resource_id, time_slot, Owner.of(project_id.id())):
+                return Optional.empty()
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
@@ -70,7 +73,7 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, allocatable_capability_id: UUID, time_slot: TimeSlot
     ) -> bool:
         with self.__session.begin_nested():
-            # TODO WHAT TO DO WITH AVAILABILITY HERE? - just think about it, don't implement
+            # TODO WHAT TO DO WITH AVAILABILITY HERE?
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
