@@ -55,7 +55,6 @@ class ResourceAvailabilityRepository:
                 for availability in availabilities
             ],
         )
-        self.__session.commit()
 
     def load_all_within_slot(self, resource_id: ResourceId, segment: TimeSlot) -> list[ResourceAvailability]:
         statement = text(
@@ -112,7 +111,6 @@ class ResourceAvailabilityRepository:
                 "version": version,
             },
         )
-        # self.__session.commit()
         return update.rowcount == 1  # type: ignore
 
     def save_checking_version_by_resource_grouped_availability(

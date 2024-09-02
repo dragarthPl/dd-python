@@ -1,0 +1,1 @@
+from domaindrivers.smartschedule.allocation.capabilityscheduling import schema as schema
