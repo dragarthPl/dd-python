@@ -11,16 +11,16 @@ class TestTimeSlot(TestCase):
         january2023: TimeSlot = TimeSlot.create_monthly_time_slot_at_utc(2023, 1)
 
         # then
-        self.assertEqual(january2023.since, datetime(2023, 1, 1).astimezone(pytz.utc))
-        self.assertEqual(january2023.to, datetime(2023, 2, 1).astimezone(pytz.utc))
+        self.assertEqual(january2023.since, datetime(2023, 1, 1).replace(tzinfo=pytz.utc))
+        self.assertEqual(january2023.to, datetime(2023, 2, 1).replace(tzinfo=pytz.utc))
 
     def test_creating_daily_time_slot_at_utc(self) -> None:
         # when
         specific_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2023, 1, 15)
 
         # then
-        self.assertEqual(specific_day.since, datetime(2023, 1, 15).astimezone(pytz.utc))
-        self.assertEqual(specific_day.to, datetime(2023, 1, 16).astimezone(pytz.utc))
+        self.assertEqual(specific_day.since, datetime(2023, 1, 15).replace(tzinfo=pytz.utc))
+        self.assertEqual(specific_day.to, datetime(2023, 1, 16).replace(tzinfo=pytz.utc))
 
     def test_one_slot_within_another(self) -> None:
         # given

@@ -21,16 +21,15 @@ class TimeSlot:
 
     @classmethod
     def create_daily_time_slot_at_utc(cls, year: int, month: int, day: int) -> "TimeSlot":
-        this_day = datetime(year, month, day)
-        since = this_day.astimezone(pytz.UTC)
+        since = datetime(year, month, day).replace(tzinfo=pytz.utc)
         return cls(since, since + relativedelta(days=1))
 
     @classmethod
     def create_monthly_time_slot_at_utc(cls, year: int, month: int) -> "TimeSlot":
         start_of_month: datetime = datetime(year, month, 1)
         end_of_month: datetime = start_of_month + relativedelta(months=1)
-        since = start_of_month.astimezone(pytz.utc)
-        to = end_of_month.astimezone(pytz.utc)
+        since = start_of_month.replace(tzinfo=pytz.utc)
+        to = end_of_month.replace(tzinfo=pytz.utc)
         return TimeSlot(since, to)
 
     def overlaps_with(self, other: TimeSlot) -> bool:

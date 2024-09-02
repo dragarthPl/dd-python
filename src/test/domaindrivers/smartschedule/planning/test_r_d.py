@@ -22,32 +22,32 @@ class TestRD(TestCase):
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JANUARY: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-01-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-01-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
     FEBRUARY: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-02-28T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-02-28T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
     MARCH: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
     Q1: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-03-31T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
     JAN_1_4: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-01-04T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
     FEB_2_16: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-02-16T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-02-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-02-16T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
     MAR_1_6: Final[TimeSlot] = TimeSlot(
-        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
-        datetime.strptime("2020-03-06T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC),
+        datetime.strptime("2020-03-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
+        datetime.strptime("2020-03-06T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.utc),
     )
 
     project_facade: PlanningFacade

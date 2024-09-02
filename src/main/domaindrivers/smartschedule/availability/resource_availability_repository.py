@@ -55,7 +55,6 @@ class ResourceAvailabilityRepository:
                 for availability in availabilities
             ],
         )
-        self.__session.commit()
 
     def load_all_within_slot(self, resource_id: ResourceId, segment: TimeSlot) -> list[ResourceAvailability]:
         statement = text(
