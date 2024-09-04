@@ -40,3 +40,6 @@ class Optional(Generic[T]):
         if self._value is None:
             return supplier()
         return self._value
+
+    def or_else(self, other: T) -> T:
+        return self._value if self._value else other

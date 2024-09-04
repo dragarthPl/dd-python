@@ -3,7 +3,7 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_cap
     AllocatableCapabilityId,
 )
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_resource_id import AllocatableResourceId
-from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
@@ -11,5 +11,5 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 class AllocatableCapabilitySummary:
     allocatable_capability_id: AllocatableCapabilityId
     allocatableResourceId: AllocatableResourceId
-    capability: Capability
+    capabilities: CapabilitySelector
     time_slot: TimeSlot

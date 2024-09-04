@@ -76,7 +76,7 @@ class CapabilityFinder:
                     lambda allocatable_capability: AllocatableCapabilitySummary(
                         allocatable_capability.id(),
                         allocatable_capability.resource_id(),
-                        allocatable_capability.capability(),
+                        allocatable_capability.capabilities(),
                         allocatable_capability.slot(),
                     ),
                     since,
