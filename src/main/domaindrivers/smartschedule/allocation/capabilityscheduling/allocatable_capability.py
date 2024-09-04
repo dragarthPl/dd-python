@@ -5,6 +5,7 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_cap
     AllocatableCapabilityId,
 )
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_resource_id import AllocatableResourceId
+from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
@@ -15,7 +16,7 @@ class AllocatableCapability:
 
     # @Type(JsonType.class)
     # @Column(columnDefinition = "jsonb")
-    _capability: Capability = None
+    _possible_capabilities: CapabilitySelector = None
 
     # @Embedded
     _allocatable_resource_id: AllocatableResourceId = None
@@ -31,19 +32,19 @@ class AllocatableCapability:
         self,
         allocatable_capability_id: AllocatableCapabilityId = None,
         allocatable_resource_id: AllocatableResourceId = None,
-        capability: Capability = None,
+        possible_capabilities: CapabilitySelector = None,
         time_slot: TimeSlot = None,
     ) -> None:
         self._allocatable_capability_id = allocatable_capability_id or AllocatableCapabilityId.new_one()
         self._allocatable_resource_id = allocatable_resource_id
-        self._capability = capability
+        self._possible_capabilities = possible_capabilities
         self._time_slot = time_slot
 
     def id(self) -> AllocatableCapabilityId:
         return self._allocatable_capability_id
 
-    def can_perform(self, capability: Capability) -> bool:
-        return cast(bool, capability == capability)
+    def can_perform(self, capabilities: set[Capability]) -> bool:
+        return cast(bool, self.capabilities().can_perform_capabilities(capabilities))
 
     def resource_id(self) -> AllocatableResourceId:
         return self._allocatable_resource_id
@@ -51,5 +52,5 @@ class AllocatableCapability:
     def slot(self) -> TimeSlot:
         return self._time_slot
 
-    def capability(self) -> Capability:
-        return self._capability
+    def capabilities(self) -> CapabilitySelector:
+        return self._possible_capabilities

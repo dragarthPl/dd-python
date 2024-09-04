@@ -22,10 +22,14 @@ class CapabilitySelector(Serializable):  # type: ignore
     def can_perform_one_of(cls, capabilities: set[Capability]) -> "CapabilitySelector":
         return CapabilitySelector(capabilities, cls.SelectingPolicy.ONE_OF_ALL)
 
+    @classmethod
+    def can_just_perform(self, capability: Capability) -> "CapabilitySelector":
+        return CapabilitySelector({capability}, CapabilitySelector.SelectingPolicy.ONE_OF_ALL)
+
     def can_perform(self, capability: Capability) -> bool:
         return capability in self.capabilities
 
     def can_perform_capabilities(self, capabilities: set[Capability]) -> bool:
         if len(capabilities) == 1:
-            return self.capabilities == capabilities
+            return all(capabiliti in self.capabilities for capabiliti in capabilities)
         return self.selecting_policy == self.SelectingPolicy.ALL_SIMULTANEOUSLY and self.capabilities == capabilities

@@ -16,7 +16,7 @@ allocatable_capabilities_table = Table(
     mapper_registry.metadata,
     Column("id", UUID(), primary_key=True),
     Column("resource_id", UUID(), nullable=False),
-    Column("capability", JSONB, nullable=True),
+    Column("possible_capabilities", JSONB, nullable=True),
     Column("from_date", TIMESTAMP(timezone=True), nullable=True),
     Column("to_date", TIMESTAMP(timezone=True), nullable=True),
 )
