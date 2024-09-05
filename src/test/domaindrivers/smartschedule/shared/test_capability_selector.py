@@ -1,8 +1,8 @@
 from typing import Final
 from unittest import TestCase
 
-from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.capability_selector import CapabilitySelector
 
 
 class TestCapabilitySelector(TestCase):

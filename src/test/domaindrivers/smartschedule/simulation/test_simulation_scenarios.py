@@ -116,7 +116,7 @@ class TestSimulationScenarios(TestCase):
         )
 
         # and there are
-        extra_capability: AvailableResourceCapability = AvailableResourceCapability(
+        extra_capability: AvailableResourceCapability = AvailableResourceCapability.from_capability(
             uuid.uuid4(), Capability.skill("YT DRAMA COMMENTS"), self.JAN_1
         )
 
@@ -184,10 +184,12 @@ class TestSimulationScenarios(TestCase):
 
         # and there are
         slawek: AdditionalPricedCapability = AdditionalPricedCapability(
-            Decimal(9999), AvailableResourceCapability(uuid.uuid4(), Capability.skill("JAVA-MID"), self.JAN_1)
+            Decimal(9999),
+            AvailableResourceCapability.from_capability(uuid.uuid4(), Capability.skill("JAVA-MID"), self.JAN_1),
         )
         staszek: AdditionalPricedCapability = AdditionalPricedCapability(
-            Decimal(3), AvailableResourceCapability(uuid.uuid4(), Capability.skill("JAVA-MID"), self.JAN_1)
+            Decimal(3),
+            AvailableResourceCapability.from_capability(uuid.uuid4(), Capability.skill("JAVA-MID"), self.JAN_1),
         )
 
         # when
@@ -201,6 +203,36 @@ class TestSimulationScenarios(TestCase):
         # then
         self.assertEqual(Decimal(-9959), buying_slawek)  # we pay 9999 and get the project for 40
         self.assertEqual(Decimal(37), buying_staszek)  # we pay 3 and get the project for 40
+
+    def test_takes_into_account_simulations_capabilities(self) -> None:
+        # given
+        simulated_projects: list[SimulatedProject] = (
+            self.simulated_projects()
+            .with_project(self.PROJECT_1)
+            .that_requires(Demand.demand_for(Capability.skill("JAVA-MID"), self.JAN_1))
+            .that_can_earn(Decimal(9))
+            .with_project(self.PROJECT_2)
+            .that_requires(Demand.demand_for(Capability.skill("JAVA-MID"), self.JAN_1))
+            .that_requires(Demand.demand_for(Capability.skill("PYTHON"), self.JAN_1))
+            .that_can_earn(Decimal(99))
+            .build()
+        )
+
+        # and there are
+        simulated_availability: SimulatedCapabilities = (
+            self.simulated_capabilities()
+            .with_employee(self.STASZEK)
+            .that_brings_simultaneously(Capability.skill("JAVA-MID"), Capability.skill("PYTHON"))
+            .that_is_available_at(self.JAN_1)
+            .build()
+        )
+
+        # when
+        result: Result = self.simulation_facade.what_is_the_optimal_setup(simulated_projects, simulated_availability)
+
+        # then
+        self.assertEqual(99, result.profit)
+        self.assertEqual(1, len(result.chosen_items))
 
     def simulated_projects(self) -> SimulatedProjectsBuilder:
         return SimulatedProjectsBuilder()
