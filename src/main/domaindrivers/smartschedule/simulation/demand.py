@@ -18,6 +18,4 @@ class Demand(WeightDimension[AvailableResourceCapability]):
 
     @override
     def is_satisfied_by(self, available_capability: AvailableResourceCapability) -> bool:
-        return bool(
-            self.capability == available_capability.capability and self.slot.within(available_capability.time_slot)
-        )
+        return bool(available_capability.performs(self.capability) and self.slot.within(available_capability.time_slot))

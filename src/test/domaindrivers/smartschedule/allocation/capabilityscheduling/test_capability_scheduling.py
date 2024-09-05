@@ -15,10 +15,10 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_cap
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_resource_id import AllocatableResourceId
 from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_finder import CapabilityFinder
 from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_scheduler import CapabilityScheduler
-from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.calendar import Calendar
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
