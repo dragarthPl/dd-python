@@ -1,18 +1,19 @@
 from datetime import datetime
-from uuid import UUID
 
 from attrs import define, field
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.allocation.allocations import Allocations
 from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
 from domaindrivers.smartschedule.allocation.project_allocations_demands_scheduled import (
     ProjectAllocationsDemandsScheduled,
 )
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -34,10 +35,14 @@ class ProjectAllocations:
         return cls(project_id, Allocations.none(), demands)
 
     def allocate(
-        self, resource_id: ResourceId, capability: Capability, requested_slot: TimeSlot, when: datetime
+        self,
+        allocatable_capability_id: AllocatableCapabilityId,
+        capability: Capability,
+        requested_slot: TimeSlot,
+        when: datetime,
     ) -> Optional[CapabilitiesAllocated]:
-        allocated_capability: AllocatedCapability = AllocatedCapability.of(
-            resource_id.get_id(), capability, requested_slot
+        allocated_capability: AllocatedCapability = AllocatedCapability(
+            allocatable_capability_id, capability, requested_slot
         )
         new_allocations: Allocations = self._allocations.add(allocated_capability)
         if self.__nothing_allocated(new_allocations) or not self.__within_project_time_slot(requested_slot):
@@ -45,7 +50,7 @@ class ProjectAllocations:
         self._allocations = new_allocations
         return Optional.of(
             CapabilitiesAllocated.of(
-                allocated_capability.allocated_capability_id, self._project_id, self.missing_demands(), when
+                allocated_capability.allocated_capability_id.get_id(), self._project_id, self.missing_demands(), when
             )
         )
 
@@ -58,7 +63,7 @@ class ProjectAllocations:
         return requested_slot.within(self._time_slot)
 
     def release(
-        self, allocated_capability_id: UUID, time_slot: TimeSlot, when: datetime
+        self, allocated_capability_id: AllocatableCapabilityId, time_slot: TimeSlot, when: datetime
     ) -> Optional[CapabilityReleased]:
         new_allocations: Allocations = self._allocations.remove(allocated_capability_id, time_slot)
         if new_allocations == self._allocations:

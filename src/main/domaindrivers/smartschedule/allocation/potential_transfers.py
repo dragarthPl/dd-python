@@ -21,19 +21,21 @@ class PotentialTransfers:
         self,
         project_from: ProjectAllocationsId,
         project_to: ProjectAllocationsId,
-        capability: AllocatedCapability,
+        allocated_capability: AllocatedCapability,
         for_slot: TimeSlot,
     ) -> "PotentialTransfers":
         from_project: Allocations = self.summary.project_allocations.get(project_from)
         to_project: Allocations = self.summary.project_allocations.get(project_to)
         if not from_project or not to_project:
             return self
-        new_allocations_project_from: Allocations = from_project.remove(capability.allocated_capability_id, for_slot)
+        new_allocations_project_from: Allocations = from_project.remove(
+            allocated_capability.allocated_capability_id, for_slot
+        )
         if new_allocations_project_from == from_project:
             return self
         self.summary.project_allocations[project_from] = new_allocations_project_from
         new_allocations_project_to: Allocations = to_project.add(
-            AllocatedCapability.of(capability.resource_id, capability.capability, for_slot)
+            AllocatedCapability(allocated_capability.allocated_capability_id, allocated_capability.capability, for_slot)
         )
         self.summary.project_allocations[project_to] = new_allocations_project_to
         return PotentialTransfers(self.summary, self.earnings)
