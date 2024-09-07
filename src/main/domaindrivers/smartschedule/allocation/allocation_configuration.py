@@ -2,6 +2,7 @@ from typing import cast, Type
 
 import injector
 from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
+from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_finder import CapabilityFinder
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.project_allocations_repository_sqlalchemy import (
     ProjectAllocationsRepositorySqlalchemy,
@@ -26,5 +27,6 @@ class AllocationConfiguration(Module):
         session: Session,
         project_allocations_repository: ProjectAllocationsRepository,
         availability_facade: AvailabilityFacade,
+        capability_finder: CapabilityFinder,
     ) -> AllocationFacade:
-        return AllocationFacade(session, project_allocations_repository, availability_facade)
+        return AllocationFacade(session, project_allocations_repository, availability_facade, capability_finder)

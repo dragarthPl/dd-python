@@ -99,6 +99,28 @@ class TestCapabilityAllocating(TestCase):
         summary: ProjectsAllocationsSummary = self.allocation_facade.find_all_projects_allocations()
         self.assertTrue(not summary.project_allocations.get(project_id).all)
 
+    def test_cant_allocate_when_capability_has_not_been_scheduled(self) -> None:
+        # given
+        one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        skill_java: Capability = Capability.skill("JAVA")
+        demand: Demand = Demand(skill_java, one_day)
+        # and
+        not_scheduled_capability: AllocatableCapabilityId = AllocatableCapabilityId.new_one()
+        # and
+        project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
+        # and
+        self.allocation_facade.schedule_project_allocation_demands(project_id, Demands.of(demand))
+
+        # when
+        result: Optional[UUID] = self.allocation_facade.allocate_to_project(
+            project_id, not_scheduled_capability, skill_java, one_day
+        )
+
+        # then
+        self.assertFalse(result.is_present())
+        summary: ProjectsAllocationsSummary = self.allocation_facade.find_all_projects_allocations()
+        self.assertTrue(not summary.project_allocations.get(project_id).all)
+
     def test_can_release_capability_from_project(self) -> None:
         # given
         one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
@@ -121,6 +143,7 @@ class TestCapabilityAllocating(TestCase):
         self.assertTrue(result)
         summary: ProjectsAllocationsSummary = self.allocation_facade.find_all_projects_allocations()
         self.assertEqual(summary.project_allocations.get(project_id).all, set())
+        self.assertTrue(self.availability_is_released(one_day, allocatable_capability_id, project_id))
 
     def create_allocatable_resource(
         self, period: TimeSlot, capability: Capability, resource_id: AllocatableResourceId
@@ -138,4 +161,11 @@ class TestCapabilityAllocating(TestCase):
         calendars: Calendars = self.availability_facade.load_calendars({resource}, period)
         return all(
             [calendar.taken_by(Owner.of(project_id.id())) == [period] for calendar in calendars.calendars.values()]
+        )
+
+    def availability_is_released(
+        self, one_day: TimeSlot, allocatable_capability_id: AllocatableCapabilityId, project_id: ProjectAllocationsId
+    ) -> bool:
+        return not self.availability_was_blocked(
+            allocatable_capability_id.to_availability_resource_id(), one_day, project_id
         )

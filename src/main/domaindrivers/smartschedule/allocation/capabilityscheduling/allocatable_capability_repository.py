@@ -81,6 +81,8 @@ class AllocatableCapabilityRepository(Repository[AllocatableCapability, Allocata
 
     def save_all(self, entities: list[AllocatableCapability]) -> None: ...
 
+    def exists_by_id(self, allocatable_capability_id: AllocatableCapabilityId) -> bool: ...
+
 
 class AllocatableCapabilityRowMapper:
     @staticmethod

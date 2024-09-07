@@ -83,3 +83,6 @@ class CapabilityFinder:
                 )
             )
         )
+
+    def is_present(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
+        return self.__allocatable_resource_repository.exists_by_id(allocatable_capability_id)

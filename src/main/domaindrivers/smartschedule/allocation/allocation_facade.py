@@ -9,6 +9,7 @@ from domaindrivers.smartschedule.allocation.capability_released import Capabilit
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
+from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_finder import CapabilityFinder
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations import ProjectAllocations
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
@@ -26,18 +27,20 @@ class AllocationFacade:
     __session: Session
     __project_allocations_repository: Final[ProjectAllocationsRepository]
     __availability_facade: Final[AvailabilityFacade]
+    __capability_finder: Final[CapabilityFinder]
 
     def __init__(
         self,
         session: Session,
         project_allocations_repository: ProjectAllocationsRepository,
         availability_facade: AvailabilityFacade,
+        capability_finder: CapabilityFinder,
     ):
         self.__session: Session = session
         self.__project_allocations_repository = project_allocations_repository
         self.__availability_facade = availability_facade
+        self.__capability_finder = capability_finder
 
-    # @Transactional
     def create_allocation(self, time_slot: TimeSlot, scheduled_demands: Demands) -> ProjectAllocationsId:
         with self.__session.begin_nested():
             project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
@@ -56,21 +59,23 @@ class AllocationFacade:
     def allocate_to_project(
         self,
         project_id: ProjectAllocationsId,
-        resource_id: AllocatableCapabilityId,
+        allocatable_capability_id: AllocatableCapabilityId,
         capability: Capability,
         time_slot: TimeSlot,
     ) -> Optional[UUID]:
         with self.__session.begin_nested():
             # yes, one transaction crossing 2 modules.
+            if not self.__capability_finder.is_present(allocatable_capability_id):
+                return Optional.empty()
             if not self.__availability_facade.block(
-                resource_id.to_availability_resource_id(), time_slot, Owner.of(project_id.id())
+                allocatable_capability_id.to_availability_resource_id(), time_slot, Owner.of(project_id.id())
             ):
                 return Optional.empty()
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
             event: Optional[CapabilitiesAllocated] = allocations.allocate(
-                resource_id, capability, time_slot, datetime.now(pytz.UTC)
+                allocatable_capability_id, capability, time_slot, datetime.now(pytz.UTC)
             )
             self.__project_allocations_repository.save(allocations)
             return event.map(lambda capabilities_allocated: capabilities_allocated.allocated_capability_id)
@@ -79,7 +84,11 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, allocatable_capability_id: AllocatableCapabilityId, time_slot: TimeSlot
     ) -> bool:
         with self.__session.begin_nested():
-            # TODO WHAT TO DO WITH AVAILABILITY HERE?
+            # can release not scheduled capability - at least for now. Hence no check to capabilityFinder
+            self.__availability_facade.release(
+                allocatable_capability_id.to_availability_resource_id(), time_slot, Owner.of(project_id.id())
+            )
+
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
@@ -89,7 +98,6 @@ class AllocationFacade:
             self.__project_allocations_repository.save(allocations)
             return event.is_present()
 
-    # @Transactional
     def edit_project_dates(self, project_id: ProjectAllocationsId, from_to: TimeSlot) -> None:
         with self.__session.begin_nested():
             project_allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
@@ -97,7 +105,6 @@ class AllocationFacade:
             ).or_else_throw()
             project_allocations.define_slot(from_to, datetime.now(pytz.UTC))
 
-    # @Transactional
     def schedule_project_allocation_demands(self, project_id: ProjectAllocationsId, demands: Demands) -> None:
         with self.__session.begin_nested():
             project_allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(

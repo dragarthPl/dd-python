@@ -49,3 +49,6 @@ class AllocatableCapabilityRepositorySqlalchemy(AllocatableCapabilityRepository)
     def delete(self, project: AllocatableCapability) -> None:
         self.session.delete(project)
         self.session.commit()
+
+    def exists_by_id(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
+        return self.session.query(AllocatableCapability).filter_by(_id=allocatable_capability_id.get_id()).count() > 0
