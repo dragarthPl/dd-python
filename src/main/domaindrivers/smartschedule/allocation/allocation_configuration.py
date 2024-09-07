@@ -1,5 +1,6 @@
 import injector
 from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
+from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_finder import CapabilityFinder
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.project_allocations_repository_impl import ProjectAllocationsRepositoryImpl
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
@@ -19,5 +20,6 @@ class AllocationConfiguration(Module):
         session: Session,
         project_allocations_repository: ProjectAllocationsRepository,
         availability_facade: AvailabilityFacade,
+        capability_finder: CapabilityFinder,
     ) -> AllocationFacade:
-        return AllocationFacade(session, project_allocations_repository, availability_facade)
+        return AllocationFacade(session, project_allocations_repository, availability_facade, capability_finder)

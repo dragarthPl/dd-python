@@ -1,4 +1,4 @@
-from typing import Final
+from typing import cast, Final
 
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capabilities_summary import (
     AllocatableCapabilitiesSummary,
@@ -83,3 +83,6 @@ class CapabilityFinder:
                 )
             )
         )
+
+    def is_present(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
+        return cast(bool, self.__allocatable_resource_repository.exists_by_id(allocatable_capability_id))

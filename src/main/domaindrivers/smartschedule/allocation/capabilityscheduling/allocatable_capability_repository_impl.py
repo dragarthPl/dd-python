@@ -49,6 +49,12 @@ class AllocatableCapabilityRepositoryImpl(AllocatableCapabilityRepository):  # t
     def find_all(self) -> list[AllocatableCapability]:
         return cast(list[AllocatableCapability], self.session.query(AllocatableCapability).all())
 
+    def exists_by_id(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
+        return cast(
+            bool,
+            self.session.query(AllocatableCapability).filter_by(_id=allocatable_capability_id.get_id()).count() > 0,
+        )
+
     def delete(self, project: AllocatableCapability) -> None:
         self.session.delete(project)
         self.session.commit()

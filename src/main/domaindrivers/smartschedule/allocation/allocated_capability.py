@@ -1,5 +1,5 @@
 import hashlib
-from typing import Any
+from typing import Any, cast
 
 from attr import field, frozen
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
@@ -18,7 +18,7 @@ class AllocatedCapability:
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, AllocatedCapability):
             return False
-        return self.capability == other.capability and self.time_slot == other.time_slot
+        return cast(bool, self.capability == other.capability and self.time_slot == other.time_slot)
 
     def __hash__(self) -> int:
         m = hashlib.md5()
