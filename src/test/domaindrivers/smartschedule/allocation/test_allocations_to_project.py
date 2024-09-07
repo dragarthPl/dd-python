@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timedelta
 from typing import Final
 from unittest import TestCase
@@ -7,6 +6,9 @@ from domaindrivers.smartschedule.allocation.allocated_capability import Allocate
 from domaindrivers.smartschedule.allocation.allocations import Allocations
 from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
@@ -15,7 +17,6 @@ from domaindrivers.smartschedule.allocation.project_allocations_demands_schedule
     ProjectAllocationsDemandsScheduled,
 )
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -24,7 +25,7 @@ from domaindrivers.utils.optional import Optional
 class TestAllocationsToProject(TestCase):
     WHEN: Final[datetime] = datetime.min
     PROJECT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
-    ADMIN_ID: Final[ResourceId] = ResourceId.new_one()
+    ADMIN_ID: Final[AllocatableCapabilityId] = AllocatableCapabilityId.new_one()
     FEB_1: Final[TimeSlot] = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 1)
     FEB_2: Final[TimeSlot] = TimeSlot.create_daily_time_slot_at_utc(2020, 2, 2)
     JANUARY: Final[TimeSlot] = TimeSlot.create_monthly_time_slot_at_utc(2020, 1)
@@ -145,9 +146,8 @@ class TestAllocationsToProject(TestCase):
             self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
         )
         # when
-        event: Optional[CapabilityReleased] = allocations.release(
-            allocated_admin.get().allocated_capability_id, self.FEB_1, self.WHEN
-        )
+        admin_id: AllocatableCapabilityId = AllocatableCapabilityId(allocated_admin.get().allocated_capability_id)
+        event: Optional[CapabilityReleased] = allocations.release(admin_id, self.FEB_1, self.WHEN)
 
         # then
         self.assertTrue(event.is_present())
@@ -160,7 +160,9 @@ class TestAllocationsToProject(TestCase):
         allocations: ProjectAllocations = ProjectAllocations.empty(self.PROJECT_ID)
 
         # when
-        event: Optional[CapabilityReleased] = allocations.release(uuid.uuid4(), self.FEB_1, self.WHEN)
+        event: Optional[CapabilityReleased] = allocations.release(
+            AllocatableCapabilityId.new_one(), self.FEB_1, self.WHEN
+        )
 
         # then
         self.assertFalse(event.is_present())
@@ -174,12 +176,17 @@ class TestAllocationsToProject(TestCase):
         )
         # and
         allocated_admin: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            AllocatableCapabilityId.new_one(), Capability.permission("ADMIN"), self.FEB_1, self.WHEN
         )
-        allocations.allocate(self.ADMIN_ID, Capability.skill("JAVA"), self.FEB_1, self.WHEN)
+        allocations.allocate(
+            AllocatableCapabilityId(allocated_admin.get().allocated_capability_id),
+            Capability.skill("JAVA"),
+            self.FEB_1,
+            self.WHEN,
+        )
         # when
         event: Optional[CapabilityReleased] = allocations.release(
-            allocated_admin.get().allocated_capability_id, self.FEB_1, self.WHEN
+            AllocatableCapabilityId(allocated_admin.get().allocated_capability_id), self.FEB_1, self.WHEN
         )
 
         # then
@@ -199,7 +206,7 @@ class TestAllocationsToProject(TestCase):
 
         # when
         event: Optional[CapabilityReleased] = allocations.release(
-            allocated_admin.get().allocated_capability_id, self.FEB_2, self.WHEN
+            AllocatableCapabilityId(allocated_admin.get().allocated_capability_id), self.FEB_2, self.WHEN
         )
 
         # then
@@ -222,7 +229,7 @@ class TestAllocationsToProject(TestCase):
 
         # when
         event: Optional[CapabilityReleased] = allocations.release(
-            allocated_admin.get().allocated_capability_id, fifteen_minutes_in_1_feb, self.WHEN
+            AllocatableCapabilityId(allocated_admin.get().allocated_capability_id), fifteen_minutes_in_1_feb, self.WHEN
         )
 
         # then
@@ -230,11 +237,11 @@ class TestAllocationsToProject(TestCase):
             event.get(), CapabilityReleased(event.get().event_id, self.PROJECT_ID, Demands.none(), self.WHEN)
         )
         self.assertTrue(
-            AllocatedCapability.of(self.ADMIN_ID.get_id(), Capability.permission("ADMIN"), one_hour_before)
+            AllocatedCapability(self.ADMIN_ID, Capability.permission("ADMIN"), one_hour_before)
             in allocations.allocations().all
         )
         self.assertTrue(
-            AllocatedCapability.of(self.ADMIN_ID.get_id(), Capability.permission("ADMIN"), the_rest)
+            AllocatedCapability(self.ADMIN_ID, Capability.permission("ADMIN"), the_rest)
             in allocations.allocations().all
         )
 

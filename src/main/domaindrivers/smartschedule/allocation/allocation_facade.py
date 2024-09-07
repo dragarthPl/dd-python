@@ -6,6 +6,9 @@ import pytz
 from domaindrivers.smartschedule.allocation.allocations import Allocations
 from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations import ProjectAllocations
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
@@ -13,7 +16,6 @@ from domaindrivers.smartschedule.allocation.project_allocations_repository impor
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.owner import Owner
-from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -53,11 +55,17 @@ class AllocationFacade:
 
     # @Transactional
     def allocate_to_project(
-        self, project_id: ProjectAllocationsId, resource_id: ResourceId, capability: Capability, time_slot: TimeSlot
+        self,
+        project_id: ProjectAllocationsId,
+        resource_id: AllocatableCapabilityId,
+        capability: Capability,
+        time_slot: TimeSlot,
     ) -> Optional[UUID]:
         with self.__session.begin_nested():
             # yes, one transaction crossing 2 modules.
-            if not self.__availability_facade.block(resource_id, time_slot, Owner.of(project_id.id())):
+            if not self.__availability_facade.block(
+                resource_id.to_availability_resource_id(), time_slot, Owner.of(project_id.id())
+            ):
                 return Optional.empty()
             allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
@@ -70,7 +78,7 @@ class AllocationFacade:
 
     # @Transactional
     def release_from_project(
-        self, project_id: ProjectAllocationsId, allocatable_capability_id: UUID, time_slot: TimeSlot
+        self, project_id: ProjectAllocationsId, allocatable_capability_id: AllocatableCapabilityId, time_slot: TimeSlot
     ) -> bool:
         with self.__session.begin_nested():
             # TODO WHAT TO DO WITH AVAILABILITY HERE?

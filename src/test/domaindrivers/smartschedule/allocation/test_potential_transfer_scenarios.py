@@ -1,4 +1,3 @@
-import uuid
 from decimal import Decimal
 from typing import Final
 from unittest import TestCase
@@ -6,6 +5,9 @@ from unittest import TestCase
 from dateutil.relativedelta import relativedelta
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.allocation.allocations import Allocations
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
 from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
@@ -49,8 +51,8 @@ class TestPotentialTransferScenarios(TestCase):
 
     BANKING_SOFT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
     INSURANCE_SOFT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
-    STASZEK_JAVA_MID: Final[AllocatedCapability] = AllocatedCapability.of(
-        uuid.uuid4(), Capability.skill("JAVA-MID"), JAN_1
+    STASZEK_JAVA_MID: Final[AllocatedCapability] = AllocatedCapability(
+        AllocatableCapabilityId.new_one(), Capability.skill("JAVA-MID"), JAN_1
     )
 
     potential_transfers: PotentialTransfersService = PotentialTransfersService(SimulationFacade(OptimizationFacade()))
