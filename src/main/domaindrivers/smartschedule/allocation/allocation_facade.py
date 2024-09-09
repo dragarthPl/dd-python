@@ -6,6 +6,9 @@ import pytz
 from domaindrivers.smartschedule.allocation.allocations import Allocations
 from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
 from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capabilities_summary import (
+    AllocatableCapabilitiesSummary,
+)
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
@@ -17,6 +20,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_repository impor
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.owner import Owner
+from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -71,14 +75,27 @@ class AllocationFacade:
                 allocatable_capability_id.to_availability_resource_id(), time_slot, Owner.of(project_id.id())
             ):
                 return Optional.empty()
-            allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
-                project_id
-            ).or_else_throw()
-            event: Optional[CapabilitiesAllocated] = allocations.allocate(
-                allocatable_capability_id, capability, time_slot, datetime.now(pytz.UTC)
+            event: Optional[CapabilitiesAllocated] = self.__allocate(
+                project_id,
+                allocatable_capability_id,
+                capability,
+                time_slot,
             )
-            self.__project_allocations_repository.save(allocations)
             return event.map(lambda capabilities_allocated: capabilities_allocated.allocated_capability_id)
+
+    def __allocate(
+        self,
+        project_id: ProjectAllocationsId,
+        allocatable_capability_id: AllocatableCapabilityId,
+        capability: Capability,
+        time_slot: TimeSlot,
+    ) -> Optional[CapabilitiesAllocated]:
+        allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(project_id).or_else_throw()
+        event: Optional[CapabilitiesAllocated] = allocations.allocate(
+            allocatable_capability_id, capability, time_slot, datetime.now(pytz.UTC)
+        )
+        self.__project_allocations_repository.save(allocations)
+        return event
 
     def release_from_project(
         self, project_id: ProjectAllocationsId, allocatable_capability_id: AllocatableCapabilityId, time_slot: TimeSlot
@@ -97,6 +114,26 @@ class AllocationFacade:
             )
             self.__project_allocations_repository.save(allocations)
             return event.is_present()
+
+    def allocate_capability_to_project_for_period(
+        self, project_id: ProjectAllocationsId, capability: Capability, time_slot: TimeSlot
+    ) -> bool:
+        with self.__session.begin_nested():
+            return False
+
+    def __find_chosen_allocatable_capability(
+        self, proposed_capabilities: AllocatableCapabilitiesSummary, chosen: ResourceId
+    ) -> AllocatableCapabilityId:
+        return next(
+            filter(
+                lambda _id: _id.to_availability_resource_id() == chosen,
+                map(
+                    lambda allocatable_capability_summary: allocatable_capability_summary.allocatable_capability_id,
+                    proposed_capabilities.all,
+                ),
+            ),
+            None,
+        )
 
     def edit_project_dates(self, project_id: ProjectAllocationsId, from_to: TimeSlot) -> None:
         with self.__session.begin_nested():
