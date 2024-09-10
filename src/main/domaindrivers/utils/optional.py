@@ -40,3 +40,10 @@ class Optional(Generic[T]):
         if self._value is None:
             return supplier()
         return self._value
+
+    def if_present(self, consumer: Callable[[T], None]) -> None:
+        if self._value is not None:
+            consumer(self._value)
+
+    def is_empty(self) -> bool:
+        return self._value is None

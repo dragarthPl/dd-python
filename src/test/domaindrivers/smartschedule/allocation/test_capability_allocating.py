@@ -93,7 +93,7 @@ class TestCapabilityAllocating(TestCase):
         )
 
         # then
-        self.assertTrue(result)
+        self.assertFalse(result)
         summary: ProjectsAllocationsSummary = self.allocation_facade.find_all_projects_allocations()
         self.assertFalse(summary.project_allocations.get(project_id).all)
 
@@ -167,7 +167,8 @@ class TestCapabilityAllocating(TestCase):
                     lambda allocatable_capability_id: allocatable_capability_id.to_availability_resource_id(),
                     capabilities,
                 )
-            )
+            ),
+            one_day,
         )
         return all(
             calendar.taken_by(Owner.of(project_id.id())) == [one_day] for calendar in calendars.calendars.values()

@@ -68,8 +68,11 @@ class ResourceGroupedAvailability:
 
     def resource_id(self) -> Optional[ResourceId]:
         # resourceId are the same;
-        return next(
-            map(lambda resource_availability: resource_availability.resource_id, self.__resource_availabilities)
+        return Optional(
+            next(
+                map(lambda resource_availability: resource_availability.resource_id(), self.__resource_availabilities),
+                None,
+            )
         )
 
     def size(self) -> int:
