@@ -43,3 +43,10 @@ class Optional(Generic[T]):
 
     def or_else(self, other: T) -> T:
         return self._value if self._value else other
+
+    def if_present(self, consumer: Callable[[T], None]) -> None:
+        if self._value is not None:
+            consumer(self._value)
+
+    def is_empty(self) -> bool:
+        return self._value is None

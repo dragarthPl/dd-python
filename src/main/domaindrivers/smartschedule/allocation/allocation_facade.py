@@ -119,7 +119,26 @@ class AllocationFacade:
         self, project_id: ProjectAllocationsId, capability: Capability, time_slot: TimeSlot
     ) -> bool:
         with self.__session.begin_nested():
-            return False
+            proposed_capabilities: AllocatableCapabilitiesSummary = self.__capability_finder.find_capabilities(
+                capability, time_slot
+            )
+            if not proposed_capabilities.all:
+                return False
+            availability_resource_ids: set[ResourceId] = set(
+                map(
+                    lambda resource: resource.allocatable_capability_id.to_availability_resource_id(),
+                    proposed_capabilities.all,
+                )
+            )
+            chosen = self.__availability_facade.block_random_available(
+                availability_resource_ids, time_slot, Owner.of(project_id.id())
+            )
+            if chosen.is_empty():
+                return False
+            to_allocate: AllocatableCapabilityId = self.__find_chosen_allocatable_capability(
+                proposed_capabilities, chosen.get()
+            )
+            return self.__allocate(project_id, to_allocate, capability, time_slot).is_present()
 
     def __find_chosen_allocatable_capability(
         self, proposed_capabilities: AllocatableCapabilitiesSummary, chosen: ResourceId

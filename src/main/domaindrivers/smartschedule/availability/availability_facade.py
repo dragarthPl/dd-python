@@ -11,6 +11,7 @@ from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.availability.segment.segment_in_minutes import SegmentInMinutes
 from domaindrivers.smartschedule.availability.segment.segments import Segments
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from domaindrivers.utils.optional import Optional
 from sqlalchemy.orm import Session
 
 
@@ -76,6 +77,19 @@ class AvailabilityFacade:
                     to_disable
                 )
             return result
+
+    def block_random_available(
+        self, resource_ids: set[ResourceId], within: TimeSlot, owner: Owner
+    ) -> Optional[ResourceId]:
+        with self.__session.begin_nested():
+            normalized: TimeSlot = Segments.normalize_to_segment_boundaries(within, SegmentInMinutes.default_segment())
+            grouped_availability: ResourceGroupedAvailability = (
+                self.__availability_repository.load_availabilities_of_random_resource_within(resource_ids, normalized)
+            )
+            if self.__block(owner, grouped_availability):
+                return grouped_availability.resource_id()
+            else:
+                return Optional.empty()
 
     def find_grouped(self, resource_id: ResourceId, within: TimeSlot) -> ResourceGroupedAvailability:
         normalized: TimeSlot = Segments.normalize_to_segment_boundaries(within, SegmentInMinutes.default_segment())

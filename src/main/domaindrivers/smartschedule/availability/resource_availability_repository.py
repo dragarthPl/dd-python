@@ -161,11 +161,9 @@ class ResourceAvailabilityRepository:
         return ResourceAvailabilityRowMapper.single_row_mapper(result.mappings().one())
 
     def load_availabilities_of_random_resource_within(
-        self, resource_ids: set[ResourceAvailabilityId], normalized: TimeSlot
+        self, resource_ids: set[ResourceId], normalized: TimeSlot
     ) -> ResourceGroupedAvailability:
-        ids: list[UUID] = list(
-            map(lambda resource_availability_id: resource_availability_id.resource_availability_id, resource_ids)
-        )
+        ids: list[UUID] = list(map(lambda resource_id: resource_id.get_id(), resource_ids))
         statement = text(
             """
          WITH AvailableResources AS (
