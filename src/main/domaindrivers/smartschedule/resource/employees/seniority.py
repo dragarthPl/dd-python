@@ -5,4 +5,4 @@ class Seniority(Enum):
     JUNIOR = 1
     MID = 2
     SENIOR = 3
-    EXPERT = 4
+    LEAD = 4

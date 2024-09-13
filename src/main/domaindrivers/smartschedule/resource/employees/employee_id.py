@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from attr import frozen
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_resource_id import AllocatableResourceId
 from domaindrivers.utils.serializable import Serializable
 
 
@@ -17,6 +18,9 @@ class EmployeeId(Serializable):
 
     def id(self) -> UUID:
         return self.__employee_id
+
+    def to_allocatable_resource_id(self) -> AllocatableResourceId:
+        return AllocatableResourceId(self.__employee_id)
 
     def __composite_values__(self) -> tuple[UUID]:
         return (self.__employee_id,)

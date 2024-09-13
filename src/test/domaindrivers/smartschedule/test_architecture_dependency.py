@@ -22,6 +22,10 @@ class ArchitectureDependencyTest(TestCase):
             .containing_modules("domaindrivers.smartschedule.availability")
             .layer("allocation")
             .containing_modules("domaindrivers.smartschedule.allocation")
+            .layer("capabilityscheduling")
+            .containing_modules("domaindrivers.smartschedule.allocation.capabilityscheduling")
+            .layer("capabilityscheduling-acl")
+            .containing_modules("domaindrivers.smartschedule.allocation.capabilityscheduling.legacyacl")
             .layer("cashflow")
             .containing_modules("domaindrivers.smartschedule.allocation.cashflow")
             .layer("parallelization")
@@ -30,6 +34,10 @@ class ArchitectureDependencyTest(TestCase):
             .containing_modules("domaindrivers.smartschedule.sorter")
             .layer("simulation")
             .containing_modules("domaindrivers.smartschedule.simulation")
+            .layer("employee")
+            .containing_modules("domaindrivers.smartschedule.resource.employees")
+            .layer("device")
+            .containing_modules("domaindrivers.smartschedule.resource.device")
             .layer("utils")
             .containing_modules("domaindrivers.utils")
             .layer("optimization")
@@ -93,6 +101,33 @@ class ArchitectureDependencyTest(TestCase):
                 .should_only()
                 .access_layers_that()
                 .are_named(["utils", "optimization", "shared"])
+            ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("employee")
+                .should_only()
+                .access_layers_that()
+                .are_named(["capabilityscheduling", "shared", "utils", "storage"])
+            ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("device")
+                .should_only()
+                .access_layers_that()
+                .are_named(["capabilityscheduling", "shared", "utils", "storage"])
+            ),
+            (
+                LayerRule()
+                .based_on(architecture)
+                .layers_that()
+                .are_named("capabilityscheduling-acl")
+                .should_only()
+                .access_layers_that()
+                .are_named(["capabilityscheduling", "shared"])
             ),
             (
                 LayerRule()
