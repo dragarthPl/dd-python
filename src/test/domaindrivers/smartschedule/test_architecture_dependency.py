@@ -112,7 +112,7 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("employee")
                 .should_only()
                 .access_layers_that()
-                .are_named(["shared", "utils", "storage"])
+                .are_named(["capabilityscheduling", "shared", "utils", "storage"])
             ),
             (
                 LayerRule()
@@ -121,7 +121,7 @@ class ArchitectureDependencyTest(TestCase):
                 .are_named("device")
                 .should_only()
                 .access_layers_that()
-                .are_named(["shared", "utils", "storage"])
+                .are_named(["capabilityscheduling", "shared", "utils", "storage"])
             ),
             (
                 LayerRule()

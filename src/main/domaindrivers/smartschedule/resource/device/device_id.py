@@ -3,6 +3,7 @@ import uuid
 from typing import Any, cast
 
 from attr import field, frozen
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_resource_id import AllocatableResourceId
 from domaindrivers.storage.uuid_pg import UUID
 from domaindrivers.utils.serializable import Serializable
 
@@ -17,6 +18,9 @@ class DeviceId(Serializable):  # type: ignore
 
     def id(self) -> UUID:
         return self.__device_id
+
+    def to_allocatable_resource_id(self) -> AllocatableResourceId:
+        return AllocatableResourceId(self.__device_id)
 
     def __composite_values__(self) -> tuple[UUID]:
         return (self.__device_id,)
