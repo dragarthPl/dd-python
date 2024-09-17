@@ -14,8 +14,10 @@ packages = [
 python = "^3.12"
 
 attrs = "^24.2.0"
+mockito = "^1.5.3"
 python-dateutil = "^2.9.0.post0"
 jsonpickle = "^3.3.0"
+freezegun = "^1.5.1"
 pytz = "^2024.2"
 sqlalchemy = "^2.0.36"
 testcontainers = {extras = ["postgres"], version = "^4.8.2"}

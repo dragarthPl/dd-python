@@ -1,14 +1,19 @@
+from datetime import datetime
 from functools import reduce
+from typing import Final
 
+import pytz
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.calendars import Calendars
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.chosen_resources import ChosenResources
+from domaindrivers.smartschedule.planning.needed_resources_chosen import NeededResourcesChosen
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.project import Project
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.project_repository import ProjectRepository
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from sqlalchemy.orm import Session
 
@@ -17,23 +22,30 @@ class PlanChosenResources:
     __session: Session
     __project_repository: ProjectRepository
     __availability_facade: AvailabilityFacade
+    __events_publisher: Final[EventsPublisher]
 
     def __init__(
-        self, session: Session, project_repository: ProjectRepository, availability_facade: AvailabilityFacade
+        self,
+        session: Session,
+        project_repository: ProjectRepository,
+        availability_facade: AvailabilityFacade,
+        events_publisher: EventsPublisher,
     ):
         self.__session = session
         self.__project_repository = project_repository
         self.__availability_facade = availability_facade
+        self.__events_publisher = events_publisher
 
-    # @Transactional
     def define_resources_within_dates(
         self, project_id: ProjectId, chosen_resources: set[ResourceId], time_boundaries: TimeSlot
     ) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_chosen_resources(ChosenResources(chosen_resources, time_boundaries))
+            self.__events_publisher.publish(
+                NeededResourcesChosen(project_id, chosen_resources, time_boundaries, datetime.now(pytz.UTC))
+            )
 
-    # @Transactional
     def adjust_stages_to_resource_availability(
         self, project_id: ProjectId, time_boundaries: TimeSlot, *stages: Stage
     ) -> None:

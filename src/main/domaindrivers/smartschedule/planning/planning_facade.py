@@ -1,7 +1,11 @@
 from datetime import datetime, timedelta
+from typing import Final
 
 import injector
+import pytz
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
+from domaindrivers.smartschedule.planning.capabilities_demanded import CapabilitiesDemanded
+from domaindrivers.smartschedule.planning.critical_stage_planned import CriticalStagePlanned
 from domaindrivers.smartschedule.planning.demands import Demands
 from domaindrivers.smartschedule.planning.demands_per_stage import DemandsPerStage
 from domaindrivers.smartschedule.planning.parallelization.duration_calculator import DurationCalculator
@@ -14,6 +18,7 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.project_repository import ProjectRepository
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from sqlalchemy.orm import Session
 
@@ -24,6 +29,7 @@ class PlanningFacade:
     __project_repository: ProjectRepository
     __parallelization: StageParallelization
     __plan_chosen_resources_service: PlanChosenResources
+    __events_publisher: Final[EventsPublisher]
 
     def __init__(
         self,
@@ -31,11 +37,13 @@ class PlanningFacade:
         project_repository: ProjectRepository,
         parallelization: StageParallelization,
         resources_planning: PlanChosenResources,
+        events_publisher: EventsPublisher,
     ) -> None:
         self.__session = session
         self.__project_repository = project_repository
         self.__parallelization = parallelization
         self.__plan_chosen_resources_service = resources_planning
+        self.__events_publisher = events_publisher
 
     def add_new_project_with_stages(self, name: str, *stages: Stage) -> ProjectId:
         parallelized_stages: ParallelStagesList = self.__parallelization.of(set(stages))
@@ -46,32 +54,33 @@ class PlanningFacade:
         self.__project_repository.save(project)
         return project.id
 
-    # @Transactional
     def define_start_date(self, project_id: ProjectId, possible_start_date: datetime) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_schedule(possible_start_date)
 
-    # @Transactional
     def define_project_stages(self, project_id: ProjectId, *stages: Stage) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             parallelized_stages: ParallelStagesList = self.__parallelization.of(set(stages))
             project.define_stages(parallelized_stages)
 
-    # @Transactional
     def add_demands(self, project_id: ProjectId, demands: Demands) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_demands(demands)
+            self.__events_publisher.publish(
+                CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
+            )
 
-    # @Transactional
     def define_demands_per_stage(self, project_id: ProjectId, demands_per_stage: DemandsPerStage) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_demands_per_stage(demands_per_stage)
+            self.__events_publisher.publish(
+                CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
+            )
 
-    # @Transactional
     def define_resources_within_dates(
         self, project_id: ProjectId, chosen_resources: set[ResourceId], time_boundaries: TimeSlot
     ) -> None:
@@ -96,12 +105,18 @@ class PlanningFacade:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_schedule_stage(critical_stage, stage_time_slot)
+            self.__events_publisher.publish(
+                CriticalStagePlanned(project_id, stage_time_slot, resource_id, datetime.now(pytz.UTC))
+            )
 
     # @Transactional
     def plan_critical_stage(self, project_id: ProjectId, critical_stage: Stage, stage_time_slot: TimeSlot) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
             project.add_schedule_stage(critical_stage, stage_time_slot)
+            self.__events_publisher.publish(
+                CriticalStagePlanned(project_id, stage_time_slot, None, datetime.now(pytz.UTC))
+            )
 
     # @Transactional
     def define_manual_schedule(self, project_id: ProjectId, schedule: Schedule) -> None:

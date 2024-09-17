@@ -1,24 +1,33 @@
 from datetime import timedelta
 from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
 from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
+from typing import Callable, cast, Type
 from unittest import TestCase
 
+import mockito
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.availability.calendar import Calendar
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_grouped_availability import ResourceGroupedAvailability
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
+from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from mockito import arg_that, mock
 
 
 class TestAvailabilityFacade(TestCase):
     SQL_SCRIPTS: tuple[str] = ("schema-availability.sql",)
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
     availability_facade: AvailabilityFacade
+    events_publisher: EventsPublisher
 
     def setUp(self) -> None:
         dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
-        self.availability_facade = dependency_resolver.resolve_dependency(AvailabilityFacade)
+        self.availability_facade = dependency_resolver.resolve_dependency(
+            cast(Type[AvailabilityFacade], AvailabilityFacade)
+        )
+        self.events_publisher = dependency_resolver.resolve_dependency(cast(Type[EventsPublisher], EventsPublisher))
 
     def test_can_create_availability_slots(self) -> None:
         # given
@@ -200,3 +209,31 @@ class TestAvailabilityFacade(TestCase):
         leftover = one_day.leftover_after_removing_common_with(fifteen_minutes)
         self.assertEqual(taken_by_owner, leftover)
         self.assertEqual(daily_calendar.taken_by(new_requester), [fifteen_minutes])
+
+    def test_resource_taken_over_event_is_emitted_after_taking_over_the_resource(self) -> None:
+        # given
+        resource_id: ResourceId = ResourceId.new_one()
+        one_day: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 1, 1)
+        initial_owner: Owner = Owner.new_one()
+        new_owner: Owner = Owner.new_one()
+        self.availability_facade._AvailabilityFacade__events_publisher = mock()  # type: ignore[attr-defined]
+        self.availability_facade.create_resource_slots(resource_id, one_day)
+        self.availability_facade.block(resource_id, one_day, initial_owner)
+
+        # when
+        result: bool = self.availability_facade.disable(resource_id, one_day, new_owner)
+
+        # then
+        self.assertTrue(result)
+        mockito.verify(self.availability_facade._AvailabilityFacade__events_publisher).publish(  # type: ignore[attr-defined]
+            arg_that(self.taken_over(resource_id, initial_owner, one_day))
+        )
+
+    def taken_over(self, resource_id: ResourceId, initial_owner: Owner, one_day: TimeSlot) -> Callable[[Event], bool]:
+        return lambda event: (
+            getattr(event, "resource_id") == resource_id
+            and getattr(event, "slot") == one_day
+            and getattr(event, "previous_owners") == {initial_owner}
+            and event.occurred_at() is not None
+            and getattr(event, "event_id") is not None
+        )

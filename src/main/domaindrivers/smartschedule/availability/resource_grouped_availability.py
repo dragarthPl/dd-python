@@ -94,3 +94,6 @@ class ResourceGroupedAvailability:
 
     def has_no_slots(self) -> bool:
         return not self.__resource_availabilities
+
+    def owners(self) -> set[Owner]:
+        return set(map(ResourceAvailability.blocked_by, self.__resource_availabilities))

@@ -14,7 +14,11 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_cap
 )
 from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_finder import CapabilityFinder
 from domaindrivers.smartschedule.allocation.demands import Demands
+from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
 from domaindrivers.smartschedule.allocation.project_allocations import ProjectAllocations
+from domaindrivers.smartschedule.allocation.project_allocations_demands_scheduled import (
+    ProjectAllocationsDemandsScheduled,
+)
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
@@ -22,6 +26,7 @@ from domaindrivers.smartschedule.availability.availability_facade import Availab
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
 from sqlalchemy.orm import Session
@@ -32,6 +37,7 @@ class AllocationFacade:
     __project_allocations_repository: Final[ProjectAllocationsRepository]
     __availability_facade: Final[AvailabilityFacade]
     __capability_finder: Final[CapabilityFinder]
+    __events_publisher: Final[EventsPublisher]
 
     def __init__(
         self,
@@ -39,11 +45,13 @@ class AllocationFacade:
         project_allocations_repository: ProjectAllocationsRepository,
         availability_facade: AvailabilityFacade,
         capability_finder: CapabilityFinder,
+        events_publisher: EventsPublisher,
     ):
         self.__session: Session = session
         self.__project_allocations_repository = project_allocations_repository
         self.__availability_facade = availability_facade
         self.__capability_finder = capability_finder
+        self.__events_publisher = events_publisher
 
     def create_allocation(self, time_slot: TimeSlot, scheduled_demands: Demands) -> ProjectAllocationsId:
         with self.__session.begin_nested():
@@ -52,6 +60,9 @@ class AllocationFacade:
                 project_id, Allocations.none(), scheduled_demands, time_slot
             )
             self.__project_allocations_repository.save(project_allocations)
+            self.__events_publisher.publish(
+                ProjectAllocationScheduled.of(project_id, time_slot, datetime.now(pytz.UTC))
+            )
             return project_id
 
     def find_all_projects_allocations_by(self, project_ids: set[ProjectAllocationsId]) -> ProjectsAllocationsSummary:
@@ -160,11 +171,16 @@ class AllocationFacade:
                 project_id
             ).or_else_throw()
             project_allocations.define_slot(from_to, datetime.now(pytz.UTC))
+            self.__events_publisher.publish(ProjectAllocationScheduled.of(project_id, from_to, datetime.now(pytz.UTC)))
 
     def schedule_project_allocation_demands(self, project_id: ProjectAllocationsId, demands: Demands) -> None:
         with self.__session.begin_nested():
             project_allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_get(lambda: ProjectAllocations.empty(project_id))
-            project_allocations.add_demands(demands, datetime.now(pytz.UTC))
+            event: Optional[ProjectAllocationsDemandsScheduled] = project_allocations.add_demands(
+                demands,
+                datetime.now(pytz.UTC),
+            )
+            event.if_present(self.__events_publisher.publish)
             self.__project_allocations_repository.save(project_allocations)

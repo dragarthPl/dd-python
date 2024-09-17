@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
 from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
+from typing import Callable
 from unittest import TestCase
 
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
@@ -14,7 +15,9 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.event import Event
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from mockito import arg_that, mock, mockito
 
 
 class TestPlanningFacade(TestCase):
@@ -203,4 +206,25 @@ class TestPlanningFacade(TestCase):
             self.assertTrue(
                 loaded.schedule.dates.get(key, {}) == value,
             )
-        # assertThat(loaded.schedule().dates()).containsExactlyInAnyOrderEntriesOf(dates);
+
+    def test_capabilities_demanded_event_is_emitted_after_adding_demands(self) -> None:
+        # given
+        project_id: ProjectId = self.project_facade.add_new_project_with_stages("project", Stage.from_name("Stage1"))
+        # and
+        demand_for_java: Demands = Demands.of(Demand.demand_for(Capability.skill("JAVA")))
+        self.project_facade._PlanningFacade__events_publisher = mock()  # type: ignore[attr-defined]
+        self.project_facade.add_demands(project_id, demand_for_java)
+
+        # then
+        # TODO: Mockito.verify(eventsPublisher).publish(argThat(capabilities_demanded(projectId, demandForJava)));
+
+        mockito.verify(self.project_facade._PlanningFacade__events_publisher).publish(  # type: ignore[attr-defined]
+            arg_that(self.capabilities_demanded(project_id, demand_for_java))
+        )
+
+    def capabilities_demanded(self, project_id: ProjectId, demands: Demands) -> Callable[[Event], bool]:
+        return (
+            lambda event: getattr(event, "project_id") == project_id
+            and getattr(event, "demands") == demands
+            and getattr(event, "uuid") is not None
+        )

@@ -18,3 +18,6 @@ class Cashflow:
     def update(self, income: Income, cost: Cost) -> None:
         self._income_value = income
         self._cost_value = cost
+
+    def project_id(self) -> ProjectAllocationsId:
+        return self._project_id

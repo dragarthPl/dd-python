@@ -2,22 +2,27 @@ from datetime import datetime
 from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
 from test.domaindrivers.smartschedule.fixtures import contains_only_once_elements_of
 from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
-from typing import Final
+from typing import Callable, cast, Final, Type
 from unittest import TestCase
 
+import mockito
 from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from mockito import arg_that, mock
 
 
 class TestDemandScheduling(TestCase):
     SQL_SCRIPTS: tuple[str] = ("schema-allocations.sql",)
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
     allocation_facade: AllocationFacade
+    events_publisher: EventsPublisher
 
     JAVA: Final[Demand] = Demand(Capability.skill("JAVA"), TimeSlot.create_daily_time_slot_at_utc(2022, 2, 2))
     PROJECT_DATES: Final[TimeSlot] = TimeSlot(
@@ -27,7 +32,8 @@ class TestDemandScheduling(TestCase):
 
     def setUp(self) -> None:
         dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
-        self.allocation_facade = dependency_resolver.resolve_dependency(AllocationFacade)
+        self.allocation_facade = dependency_resolver.resolve_dependency(cast(Type[AllocationFacade], AllocationFacade))
+        self.events_publisher = dependency_resolver.resolve_dependency(cast(Type[EventsPublisher], EventsPublisher))
 
     def test_can_schedule_project_demands(self) -> None:
         # given
@@ -43,3 +49,26 @@ class TestDemandScheduling(TestCase):
         for demand in summary.demands.get(project_id).all:
             self.assertEqual(demand, self.JAVA)
         self.assertTrue(contains_only_once_elements_of(summary.demands.get(project_id).all, Demands.of(self.JAVA).all))
+
+    def test_project_demands_scheduled_event_is_emitted_after_defining_demands(self) -> None:
+        # given
+        project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
+
+        # when
+        self.allocation_facade._AllocationFacade__events_publisher = mock()  # type: ignore[attr-defined]
+        self.allocation_facade.schedule_project_allocation_demands(project_id, Demands.of(self.JAVA))
+
+        # then
+        mockito.verify(self.allocation_facade._AllocationFacade__events_publisher).publish(  # type: ignore[attr-defined]
+            arg_that(self.is_project_demands_scheduled_event(project_id, Demands.of(self.JAVA)))
+        )
+
+    def is_project_demands_scheduled_event(
+        self, project_id: ProjectAllocationsId, demands: Demands
+    ) -> Callable[[Event], bool]:
+        return lambda event: (
+            getattr(event, "uuid") is not None
+            and getattr(event, "project_id") == project_id
+            and getattr(event, "missing_demands") == demands
+            and event.occurred_at() is not None
+        )

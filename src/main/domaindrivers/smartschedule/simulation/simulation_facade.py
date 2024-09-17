@@ -18,8 +18,11 @@ from domaindrivers.smartschedule.simulation.simulated_project import SimulatedPr
 class SimulationFacade:
     __optimization_facade: OptimizationFacade
 
-    def __init__(self, optimization_facade: OptimizationFacade) -> None:
-        self.__optimization_facade = optimization_facade
+    def __init__(self, optimization_facade: OptimizationFacade = None) -> None:
+        if optimization_facade:
+            self.__optimization_facade = optimization_facade
+        else:
+            self.__optimization_facade = OptimizationFacade()
 
     def profit_after_buying_new_capability(
         self,
