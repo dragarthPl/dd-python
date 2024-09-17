@@ -4,6 +4,7 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_find
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.allocation.project_allocations_repository_impl import ProjectAllocationsRepositoryImpl
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from injector import Module, provider, singleton
 from sqlalchemy.orm import Session
 
@@ -21,5 +22,8 @@ class AllocationConfiguration(Module):
         project_allocations_repository: ProjectAllocationsRepository,
         availability_facade: AvailabilityFacade,
         capability_finder: CapabilityFinder,
+        events_publisher: EventsPublisher,
     ) -> AllocationFacade:
-        return AllocationFacade(session, project_allocations_repository, availability_facade, capability_finder)
+        return AllocationFacade(
+            session, project_allocations_repository, availability_facade, capability_finder, events_publisher
+        )

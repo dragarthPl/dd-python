@@ -1,3 +1,4 @@
+from test.domaindrivers.smartschedule.mocked_event_publisher import MockedEventPublisher
 from typing import Type, TypeVar
 
 import injector
@@ -11,6 +12,7 @@ from domaindrivers.smartschedule.planning.planning_configuration import Planning
 from domaindrivers.smartschedule.resource.device.device_configuration import DeviceConfiguration
 from domaindrivers.smartschedule.resource.employees.employee_configuration import EmployeeConfiguration
 from domaindrivers.smartschedule.resource.resource_configuration import ResourceConfiguration
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.storage.database import DatabaseModule
 from injector import Injector
 from testcontainers.postgres import PostgresContainer
@@ -24,7 +26,7 @@ class DependencyResolverForTest:
 
     def __init__(self, database_uri: str):
         def configure(binder: injector.Binder) -> None:
-            pass
+            binder.bind(EventsPublisher, to=MockedEventPublisher)
 
         self.injector = Injector(
             [
