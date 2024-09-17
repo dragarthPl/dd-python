@@ -45,5 +45,5 @@ class TestScheduleEmployeeCapabilities(TestCase):
         allocations: list[AllocatableCapabilityId] = self.employee_facade.schedule_capabilities(employee, one_day)
 
         # then
-        loaded: AllocatableCapabilitiesSummary = self.capability_finder.find_by_id(allocations)
+        loaded: AllocatableCapabilitiesSummary = self.capability_finder.find_by_ids(allocations)
         self.assertEqual(len(allocations), len(loaded.all))

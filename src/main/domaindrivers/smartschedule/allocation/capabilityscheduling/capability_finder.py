@@ -49,11 +49,20 @@ class CapabilityFinder:
         )
         return self.__create_summary(found)
 
-    def find_by_id(self, allocatable_capability_ids: list[AllocatableCapabilityId]) -> AllocatableCapabilitiesSummary:
+    def find_by_ids(self, allocatable_capability_ids: list[AllocatableCapabilityId]) -> AllocatableCapabilitiesSummary:
         all_by_id_in: list[AllocatableCapability] = self.__allocatable_resource_repository.find_all_by_id(
             set(allocatable_capability_ids)
         )
         return self.__create_summary(all_by_id_in)
+
+    def find_by_id(self, allocatable_capability_id: AllocatableCapabilityId) -> AllocatableCapabilitySummary:
+        return (
+            self.__allocatable_resource_repository.find_by_id(allocatable_capability_id)
+            .map(
+                self.__create_single_summary,
+            )
+            .or_else(None)
+        )
 
     def __filter_availability_in_time_slot(
         self, find_allocatable_capability: list[AllocatableCapability], time_slot: TimeSlot
@@ -73,16 +82,16 @@ class CapabilityFinder:
         return AllocatableCapabilitiesSummary(
             list(
                 map(
-                    lambda allocatable_capability: AllocatableCapabilitySummary(
-                        allocatable_capability.id(),
-                        allocatable_capability.resource_id(),
-                        allocatable_capability.capabilities(),
-                        allocatable_capability.slot(),
-                    ),
+                    self.__create_single_summary,
                     since,
                 )
             )
         )
 
-    def is_present(self, allocatable_capability_id: AllocatableCapabilityId) -> bool:
-        return self.__allocatable_resource_repository.exists_by_id(allocatable_capability_id)
+    def __create_single_summary(self, allocatable_capability: AllocatableCapability) -> AllocatableCapabilitySummary:
+        return AllocatableCapabilitySummary(
+            allocatable_capability.id(),
+            allocatable_capability.resource_id(),
+            allocatable_capability.capabilities(),
+            allocatable_capability.slot(),
+        )

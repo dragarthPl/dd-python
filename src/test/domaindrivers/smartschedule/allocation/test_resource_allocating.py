@@ -57,7 +57,7 @@ class TestResourceAllocating(TestCase):
 
         # when
         result: Optional[UUID] = self.allocation_facade.allocate_to_project(
-            project_id, allocatable_capability_id, skill_java, one_day
+            project_id, allocatable_capability_id, one_day
         )
 
         # then
@@ -65,7 +65,7 @@ class TestResourceAllocating(TestCase):
         summary: ProjectsAllocationsSummary = self.allocation_facade.find_all_projects_allocations()
         self.assertEqual(
             summary.project_allocations.get(project_id).all,
-            {AllocatedCapability(allocatable_capability_id, skill_java, one_day)},
+            {AllocatedCapability(allocatable_capability_id, CapabilitySelector.can_just_perform(skill_java), one_day)},
         )
         self.assertEqual(summary.demands.get(project_id).all, [demand])
         self.assertTrue(
@@ -92,7 +92,7 @@ class TestResourceAllocating(TestCase):
 
         # when
         result: Optional[UUID] = self.allocation_facade.allocate_to_project(
-            project_id, allocatable_capability_id, skill_java, one_day
+            project_id, allocatable_capability_id, one_day
         )
 
         # then
@@ -114,7 +114,7 @@ class TestResourceAllocating(TestCase):
 
         # when
         result: Optional[UUID] = self.allocation_facade.allocate_to_project(
-            project_id, not_scheduled_capability, skill_java, one_day
+            project_id, not_scheduled_capability, one_day
         )
 
         # then
@@ -134,8 +134,7 @@ class TestResourceAllocating(TestCase):
         # and
         self.allocation_facade.schedule_project_allocation_demands(project_id, Demands.none())
         # and
-        chosen_capability: Capability = Capability.skill("JAVA")
-        self.allocation_facade.allocate_to_project(project_id, allocatable_capability_id, chosen_capability, one_day)
+        self.allocation_facade.allocate_to_project(project_id, allocatable_capability_id, one_day)
 
         # when
         result: bool = self.allocation_facade.release_from_project(project_id, allocatable_capability_id, one_day)

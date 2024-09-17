@@ -4,6 +4,7 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_cap
     AllocatableCapabilityId,
 )
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from domaindrivers.utils.optional import Optional
 
 
 @frozen
@@ -20,7 +21,7 @@ class Allocations:
         return Allocations(all)
 
     def remove(self, to_remove: AllocatableCapabilityId, slot: TimeSlot) -> "Allocations":
-        return next(map(lambda ar: self.__remove_from_slot(ar, slot), filter(bool, [self.find(to_remove)])), self)
+        return self.find(to_remove).map(lambda ar: self.__remove_from_slot(ar, slot)).or_else(self)
 
     def __remove_from_slot(self, allocated_capability: AllocatedCapability, slot: TimeSlot) -> "Allocations":
         left_overs: set[AllocatedCapability] = set(
@@ -40,5 +41,5 @@ class Allocations:
             new_slots.add(el)
         return Allocations(new_slots)
 
-    def find(self, allocated_capability_id: AllocatableCapabilityId) -> AllocatedCapability:
-        return next(filter(lambda ar: ar.allocated_capability_id == allocated_capability_id, self.all), None)
+    def find(self, allocated_capability_id: AllocatableCapabilityId) -> Optional[AllocatedCapability]:
+        return Optional(next(filter(lambda ar: ar.allocated_capability_id == allocated_capability_id, self.all), None))

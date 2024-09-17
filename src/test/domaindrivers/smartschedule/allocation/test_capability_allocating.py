@@ -116,12 +116,8 @@ class TestCapabilityAllocating(TestCase):
             one_day, Demands.of(Demand(Capability.skill("DEBUGGING"), one_day))
         )
         # and
-        self.allocation_facade.allocate_to_project(
-            project_1, allocatable_capability_id_1, Capability.skill("DEBUGGING"), one_day
-        )
-        self.allocation_facade.allocate_to_project(
-            project_2, allocatable_capability_id_2, Capability.skill("DEBUGGING"), one_day
-        )
+        self.allocation_facade.allocate_to_project(project_1, allocatable_capability_id_1, one_day)
+        self.allocation_facade.allocate_to_project(project_2, allocatable_capability_id_2, one_day)
 
         # and
         project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()

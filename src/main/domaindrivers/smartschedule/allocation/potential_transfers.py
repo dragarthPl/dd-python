@@ -3,6 +3,12 @@ import domaindrivers.smartschedule.simulation.demands
 from attr import frozen
 from domaindrivers.smartschedule.allocation.allocated_capability import AllocatedCapability
 from domaindrivers.smartschedule.allocation.allocations import Allocations
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
+    AllocatableCapabilityId,
+)
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_summary import (
+    AllocatableCapabilitySummary,
+)
 from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
@@ -65,4 +71,32 @@ class PotentialTransfers:
                     all_demands.all,
                 )
             )
+        )
+
+    def transfer_project_to(
+        self, project_to: ProjectAllocationsId, capability_to_transfer: AllocatableCapabilitySummary, for_slot: TimeSlot
+    ) -> "PotentialTransfers":
+        project_to_move_from: ProjectAllocationsId = self.__find_project_to_move_from(
+            capability_to_transfer.allocatable_capability_id, for_slot
+        )
+        if project_to_move_from:
+            return self.transfer(
+                project_to_move_from,
+                project_to,
+                AllocatedCapability(
+                    capability_to_transfer.allocatable_capability_id,
+                    capability_to_transfer.capabilities,
+                    capability_to_transfer.time_slot,
+                ),
+                for_slot,
+            )
+        return self
+
+    def __find_project_to_move_from(self, cap: AllocatableCapabilityId, in_slot: TimeSlot) -> ProjectAllocationsId:
+        return next(
+            map(
+                lambda entry: entry[0],
+                filter(lambda entry: entry[1].find(cap).is_present(), self.summary.project_allocations.items()),
+            ),
+            None,
         )

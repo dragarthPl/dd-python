@@ -10,6 +10,6 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 @frozen
 class AllocatableCapabilitySummary:
     allocatable_capability_id: AllocatableCapabilityId
-    allocatableResourceId: AllocatableResourceId
+    allocatable_resource_id: AllocatableResourceId
     capabilities: CapabilitySelector
     time_slot: TimeSlot

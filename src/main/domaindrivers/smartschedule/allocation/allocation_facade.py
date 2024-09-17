@@ -12,6 +12,9 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_cap
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
+from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_summary import (
+    AllocatableCapabilitySummary,
+)
 from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_finder import CapabilityFinder
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
@@ -26,6 +29,7 @@ from domaindrivers.smartschedule.availability.availability_facade import Availab
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
@@ -75,12 +79,12 @@ class AllocationFacade:
         self,
         project_id: ProjectAllocationsId,
         allocatable_capability_id: AllocatableCapabilityId,
-        capability: Capability,
         time_slot: TimeSlot,
     ) -> Optional[UUID]:
         with self.__session.begin_nested():
             # yes, one transaction crossing 2 modules.
-            if not self.__capability_finder.is_present(allocatable_capability_id):
+            capability: AllocatableCapabilitySummary = self.__capability_finder.find_by_id(allocatable_capability_id)
+            if not capability:
                 return Optional.empty()
             if not self.__availability_facade.block(
                 allocatable_capability_id.to_availability_resource_id(), time_slot, Owner.of(project_id.id())
@@ -89,7 +93,7 @@ class AllocationFacade:
             event: Optional[CapabilitiesAllocated] = self.__allocate(
                 project_id,
                 allocatable_capability_id,
-                capability,
+                capability.capabilities,
                 time_slot,
             )
             return event.map(lambda capabilities_allocated: capabilities_allocated.allocated_capability_id)
@@ -98,7 +102,7 @@ class AllocationFacade:
         self,
         project_id: ProjectAllocationsId,
         allocatable_capability_id: AllocatableCapabilityId,
-        capability: Capability,
+        capability: CapabilitySelector,
         time_slot: TimeSlot,
     ) -> Optional[CapabilitiesAllocated]:
         allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(project_id).or_else_throw()
@@ -146,21 +150,20 @@ class AllocationFacade:
             )
             if chosen.is_empty():
                 return False
-            to_allocate: AllocatableCapabilityId = self.__find_chosen_allocatable_capability(
+            to_allocate: AllocatableCapabilitySummary = self.__find_chosen_allocatable_capability(
                 proposed_capabilities, chosen.get()
             )
-            return self.__allocate(project_id, to_allocate, capability, time_slot).is_present()
+            return self.__allocate(
+                project_id, to_allocate.allocatable_capability_id, to_allocate.capabilities, time_slot
+            ).is_present()
 
     def __find_chosen_allocatable_capability(
         self, proposed_capabilities: AllocatableCapabilitiesSummary, chosen: ResourceId
-    ) -> AllocatableCapabilityId:
+    ) -> AllocatableCapabilitySummary:
         return next(
             filter(
-                lambda _id: _id.to_availability_resource_id() == chosen,
-                map(
-                    lambda allocatable_capability_summary: allocatable_capability_summary.allocatable_capability_id,
-                    proposed_capabilities.all,
-                ),
+                lambda summary: summary.allocatable_capability_id.to_availability_resource_id() == chosen,
+                proposed_capabilities.all,
             ),
             None,
         )

@@ -18,6 +18,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_demands_schedule
 )
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
 
@@ -37,7 +38,7 @@ class TestAllocationsToProject(TestCase):
 
         # when
         event: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
 
         # then
@@ -62,7 +63,7 @@ class TestAllocationsToProject(TestCase):
 
         # when
         event: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
 
         # then
@@ -73,11 +74,16 @@ class TestAllocationsToProject(TestCase):
         allocations: ProjectAllocations = ProjectAllocations.empty(self.PROJECT_ID)
 
         # and
-        allocations.allocate(self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN)
+        allocations.allocate(
+            self.ADMIN_ID,
+            CapabilitySelector.can_just_perform(Capability.permission("ADMIN")),
+            self.FEB_1,
+            self.WHEN,
+        )
 
         # when
         event: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
 
         # then
@@ -91,10 +97,12 @@ class TestAllocationsToProject(TestCase):
         # and
         allocations: ProjectAllocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
         # and
-        allocations.allocate(self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN)
+        allocations.allocate(
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
+        )
         # when
         event: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.skill("JAVA"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.skill("JAVA")), self.FEB_1, self.WHEN
         )
         # then
         self.assertTrue(event.is_present())
@@ -118,10 +126,12 @@ class TestAllocationsToProject(TestCase):
         # and
         allocations: ProjectAllocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
         # and
-        allocations.allocate(self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN)
+        allocations.allocate(
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
+        )
         # when
         event: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.skill("JAVA"), self.FEB_2, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.skill("JAVA")), self.FEB_2, self.WHEN
         )
         # then
         self.assertTrue(event.is_present())
@@ -143,7 +153,7 @@ class TestAllocationsToProject(TestCase):
         allocations: ProjectAllocations = ProjectAllocations.empty(self.PROJECT_ID)
         # and
         allocated_admin: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
         # when
         admin_id: AllocatableCapabilityId = AllocatableCapabilityId(allocated_admin.get().allocated_capability_id)
@@ -176,11 +186,11 @@ class TestAllocationsToProject(TestCase):
         )
         # and
         allocated_admin: Optional[CapabilitiesAllocated] = allocations.allocate(
-            AllocatableCapabilityId.new_one(), Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
         allocations.allocate(
-            AllocatableCapabilityId(allocated_admin.get().allocated_capability_id),
-            Capability.skill("JAVA"),
+            AllocatableCapabilityId.new_one(),
+            CapabilitySelector.can_just_perform(Capability.skill("JAVA")),
             self.FEB_1,
             self.WHEN,
         )
@@ -201,7 +211,7 @@ class TestAllocationsToProject(TestCase):
         allocations: ProjectAllocations = ProjectAllocations.empty(self.PROJECT_ID)
         # and
         allocated_admin: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
 
         # when
@@ -217,7 +227,7 @@ class TestAllocationsToProject(TestCase):
         allocations: ProjectAllocations = ProjectAllocations.empty(self.PROJECT_ID)
         # and
         allocated_admin: Optional[CapabilitiesAllocated] = allocations.allocate(
-            self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
         )
 
         # when
@@ -237,11 +247,15 @@ class TestAllocationsToProject(TestCase):
             event.get(), CapabilityReleased(event.get().event_id, self.PROJECT_ID, Demands.none(), self.WHEN)
         )
         self.assertTrue(
-            AllocatedCapability(self.ADMIN_ID, Capability.permission("ADMIN"), one_hour_before)
+            AllocatedCapability(
+                self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), one_hour_before
+            )
             in allocations.allocations().all
         )
         self.assertTrue(
-            AllocatedCapability(self.ADMIN_ID, Capability.permission("ADMIN"), the_rest)
+            AllocatedCapability(
+                self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), the_rest
+            )
             in allocations.allocations().all
         )
 
@@ -253,7 +267,9 @@ class TestAllocationsToProject(TestCase):
         # and
         allocations: ProjectAllocations = ProjectAllocations.with_demands(self.PROJECT_ID, demands)
         # and
-        allocations.allocate(self.ADMIN_ID, Capability.permission("ADMIN"), self.FEB_1, self.WHEN)
+        allocations.allocate(
+            self.ADMIN_ID, CapabilitySelector.can_just_perform(Capability.permission("ADMIN")), self.FEB_1, self.WHEN
+        )
         # when
         event: Optional[ProjectAllocationsDemandsScheduled] = allocations.add_demands(
             Demands.of(Demand(Capability.skill("PYTHON"), self.FEB_1)), self.WHEN

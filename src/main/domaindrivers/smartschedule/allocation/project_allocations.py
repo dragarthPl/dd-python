@@ -14,7 +14,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_demands_schedule
     ProjectAllocationsDemandsScheduled,
 )
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.utils.optional import Optional
 
@@ -37,7 +37,7 @@ class ProjectAllocations:
     def allocate(
         self,
         allocatable_capability_id: AllocatableCapabilityId,
-        capability: Capability,
+        capability: CapabilitySelector,
         requested_slot: TimeSlot,
         when: datetime,
     ) -> Optional[CapabilitiesAllocated]:

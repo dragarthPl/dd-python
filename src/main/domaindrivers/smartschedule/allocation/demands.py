@@ -25,7 +25,7 @@ class Demands:
         return Demands(list(filter(lambda d: not self.satisfied_by(d, allocations), self.all)))
 
     def satisfied_by(self, d: Demand, allocations: Allocations) -> bool:
-        return any([ar.capability == d.capability and d.slot.within(ar.time_slot) for ar in allocations.all])
+        return any([ar.capability.can_perform(d.capability) and d.slot.within(ar.time_slot) for ar in allocations.all])
 
     def with_new(self, new_demands: "Demands") -> "Demands":
         all: list[Demand] = self.all.copy()
