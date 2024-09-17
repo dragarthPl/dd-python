@@ -55,7 +55,7 @@ class CapabilitySchedulingTest(TestCase):
         )
 
         # then
-        loaded: AllocatableCapabilitiesSummary = self.capability_finder.find_by_id(allocatable)
+        loaded: AllocatableCapabilitiesSummary = self.capability_finder.find_by_ids(allocatable)
         self.assertEqual(len(allocatable), len(loaded.all))
 
         self.assertTrue(

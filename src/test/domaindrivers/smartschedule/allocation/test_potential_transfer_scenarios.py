@@ -17,6 +17,7 @@ from domaindrivers.smartschedule.allocation.project_allocations_id import Projec
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.optimization.optimization_facade import OptimizationFacade
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.capability_selector import CapabilitySelector
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.simulation_facade import SimulationFacade
 
@@ -52,7 +53,7 @@ class TestPotentialTransferScenarios(TestCase):
     BANKING_SOFT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
     INSURANCE_SOFT_ID: Final[ProjectAllocationsId] = ProjectAllocationsId.new_one()
     STASZEK_JAVA_MID: Final[AllocatedCapability] = AllocatedCapability(
-        AllocatableCapabilityId.new_one(), Capability.skill("JAVA-MID"), JAN_1
+        AllocatableCapabilityId.new_one(), CapabilitySelector.can_just_perform(Capability.skill("JAVA-MID")), JAN_1
     )
 
     potential_transfers: PotentialTransfersService = PotentialTransfersService(SimulationFacade(OptimizationFacade()))

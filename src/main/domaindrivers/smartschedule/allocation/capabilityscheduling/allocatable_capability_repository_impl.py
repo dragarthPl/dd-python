@@ -27,7 +27,7 @@ class AllocatableCapabilityRepositoryImpl(AllocatableCapabilityRepository):  # t
     def find_by_id(self, allocatable_capability_id: AllocatableCapabilityId) -> Optional[AllocatableCapability]:
         return Optional(
             self.session.query(AllocatableCapability)
-            .filter_by(_allocatable_capability_id=allocatable_capability_id.id())
+            .filter_by(_allocatable_capability_id=allocatable_capability_id)
             .first()
         )
 
