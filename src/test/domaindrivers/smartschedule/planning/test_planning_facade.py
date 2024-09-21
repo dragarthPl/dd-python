@@ -44,7 +44,7 @@ class TestPlanningFacade(TestCase):
         project_id_2: ProjectId = self.project_facade.add_new_project_with_stages("project2", Stage.from_name("Stage2"))
 
         # when
-        loaded: list[ProjectCard] = self.project_facade.load_all({project_id, project_id_2})
+        loaded: list[ProjectCard] = self.project_facade.load_all_by_ids({project_id, project_id_2})
 
         # then
         projects = list(map(lambda x: x.project_id, loaded))

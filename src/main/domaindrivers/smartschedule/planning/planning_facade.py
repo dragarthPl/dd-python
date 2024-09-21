@@ -76,8 +76,7 @@ class PlanningFacade:
                 CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
             )
 
-        # @Transactional
-
+    # @Transactional
     def define_demands_per_stage(self, project_id: ProjectId, demands_per_stage: DemandsPerStage) -> None:
         with self.__session.begin_nested():
             project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
@@ -140,10 +139,13 @@ class PlanningFacade:
         project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
         return self.__to_summary(project)
 
-    def load_all(self, projects_ids: set[ProjectId]) -> list[ProjectCard]:
+    def load_all_by_ids(self, projects_ids: set[ProjectId]) -> list[ProjectCard]:
         return list(
             map(lambda project: self.__to_summary(project), self.__project_repository.find_all_by_id(projects_ids))
         )
+
+    def load_all(self) -> list[ProjectCard]:
+        return list(map(lambda project: self.__to_summary(project), self.__project_repository.find_all()))
 
     def __to_summary(self, project: Project) -> ProjectCard:
         return ProjectCard(

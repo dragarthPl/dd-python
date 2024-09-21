@@ -15,6 +15,7 @@ from domaindrivers.smartschedule.simulation.demand import Demand
 from domaindrivers.smartschedule.simulation.demands import Demands
 from domaindrivers.smartschedule.simulation.project_id import ProjectId
 from domaindrivers.smartschedule.simulation.simulated_project import SimulatedProject
+from domaindrivers.utils.optional import Optional
 
 
 @frozen
@@ -61,8 +62,7 @@ class PotentialTransfers:
         all_demands: Demands = self.summary.demands[project_allocations_id].missing_demands(
             self.summary.project_allocations[project_allocations_id]
         )
-        bbb = Demands(list(map(lambda demand: Demand(demand.capability, demand.slot), all_demands.all)))
-        return bbb
+        return Demands(list(map(lambda demand: Demand(demand.capability, demand.slot), all_demands.all)))
 
     def transfer_project_to(
         self, project_to: ProjectAllocationsId, capability_to_transfer: AllocatableCapabilitySummary, for_slot: TimeSlot
@@ -87,7 +87,9 @@ class PotentialTransfers:
         return next(
             map(
                 lambda entry: entry[0],
-                filter(lambda entry: entry[1].find(cap).is_present(), self.summary.project_allocations.items()),
+                filter(
+                    lambda entry: Optional(entry[1].find(cap)).is_present(), self.summary.project_allocations.items()
+                ),
             ),
             None,
         )
