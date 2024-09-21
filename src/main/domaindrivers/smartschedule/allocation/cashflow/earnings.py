@@ -13,6 +13,9 @@ class Earnings:
     def of(cls, integer: int) -> "Earnings":
         return cls(Decimal(integer))
 
+    def __composite_values__(self) -> tuple[Decimal]:
+        return (self.earnings,)
+
     def __eq__(self, other: Any) -> bool:
         if other is None or not isinstance(other, Earnings):
             return False
@@ -29,3 +32,13 @@ class Earnings:
 
     def greater_than(self, value: "Earnings") -> bool:
         return self.earnings > value.earnings
+
+    def __lt__(self, other: "Earnings") -> bool:
+        if not isinstance(other, Earnings):
+            return NotImplemented
+        return self.earnings < other.earnings
+
+    def __gt__(self, other: "Earnings") -> bool:
+        if not isinstance(other, Earnings):
+            return NotImplemented
+        return self.earnings > other.earnings

@@ -56,7 +56,9 @@ class TestPotentialTransferScenarios(TestCase):
         AllocatableCapabilityId.new_one(), CapabilitySelector.can_just_perform(Capability.skill("JAVA-MID")), JAN_1
     )
 
-    potential_transfers: PotentialTransfersService = PotentialTransfersService(SimulationFacade(OptimizationFacade()))
+    potential_transfers: PotentialTransfersService = PotentialTransfersService(
+        SimulationFacade(OptimizationFacade()), None, None
+    )
 
     def test_simulates_moving_capabilities_to_different_project(self) -> None:
         # given

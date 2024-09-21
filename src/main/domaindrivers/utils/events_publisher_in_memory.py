@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from collections.abc import Callable
+from typing import Callable
 
 from domaindrivers.smartschedule.shared.application_event import ApplicationEvent
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher

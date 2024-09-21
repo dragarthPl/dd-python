@@ -47,7 +47,7 @@ class TestPlanningFacade(TestCase):
         project_id_2: ProjectId = self.project_facade.add_new_project_with_stages("project2", Stage.from_name("Stage2"))
 
         # when
-        loaded: list[ProjectCard] = self.project_facade.load_all({project_id, project_id_2})
+        loaded: list[ProjectCard] = self.project_facade.load_all_by_ids({project_id, project_id_2})
 
         # then
         projects = list(map(lambda x: x.project_id, loaded))
@@ -216,8 +216,6 @@ class TestPlanningFacade(TestCase):
         self.project_facade.add_demands(project_id, demand_for_java)
 
         # then
-        # TODO: Mockito.verify(eventsPublisher).publish(argThat(capabilities_demanded(projectId, demandForJava)));
-
         mockito.verify(self.project_facade._PlanningFacade__events_publisher).publish(  # type: ignore[attr-defined]
             arg_that(self.capabilities_demanded(project_id, demand_for_java))
         )

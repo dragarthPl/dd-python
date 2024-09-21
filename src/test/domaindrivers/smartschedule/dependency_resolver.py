@@ -11,6 +11,7 @@ from domaindrivers.smartschedule.planning.planning_configuration import Planning
 from domaindrivers.smartschedule.resource.device.device_configuration import DeviceConfiguration
 from domaindrivers.smartschedule.resource.employees.employee_configuration import EmployeeConfiguration
 from domaindrivers.smartschedule.resource.resource_configuration import ResourceConfiguration
+from domaindrivers.smartschedule.risk.risk_configuration import RiskConfiguration
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.storage.database import DatabaseModule
 from domaindrivers.utils.events_publisher_in_memory import EventBus, InMemoryEventBus
@@ -48,6 +49,7 @@ class DependencyResolverForTest:
                 EmployeeConfiguration(),
                 ResourceConfiguration(),
                 CapabilityPlanningConfiguration(),
+                RiskConfiguration(),
             ]
         )
 

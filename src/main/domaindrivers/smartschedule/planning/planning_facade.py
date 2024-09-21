@@ -131,10 +131,13 @@ class PlanningFacade:
         project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
         return self.__to_summary(project)
 
-    def load_all(self, projects_ids: set[ProjectId]) -> list[ProjectCard]:
+    def load_all_by_ids(self, projects_ids: set[ProjectId]) -> list[ProjectCard]:
         return list(
             map(lambda project: self.__to_summary(project), self.__project_repository.find_all_by_id(projects_ids))
         )
+
+    def load_all(self) -> list[ProjectCard]:
+        return list(map(lambda project: self.__to_summary(project), self.__project_repository.find_all()))
 
     def __to_summary(self, project: Project) -> ProjectCard:
         return ProjectCard(

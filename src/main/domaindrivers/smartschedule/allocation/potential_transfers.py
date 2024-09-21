@@ -16,6 +16,7 @@ from domaindrivers.smartschedule.allocation.projects_allocations_summary import 
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from domaindrivers.smartschedule.simulation.project_id import ProjectId
 from domaindrivers.smartschedule.simulation.simulated_project import SimulatedProject
+from domaindrivers.utils.optional import Optional
 
 
 @frozen
@@ -96,7 +97,9 @@ class PotentialTransfers:
         return next(
             map(
                 lambda entry: entry[0],
-                filter(lambda entry: entry[1].find(cap).is_present(), self.summary.project_allocations.items()),
+                filter(
+                    lambda entry: Optional(entry[1].find(cap)).is_present(), self.summary.project_allocations.items()
+                ),
             ),
             None,
         )
