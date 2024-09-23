@@ -42,7 +42,7 @@ class RiskPeriodicCheckSaga:
         return 15
 
     def are_demands_satisfied(self) -> bool:
-        return False
+        return not self._missing_demands.all
 
     def missing_demands(self) -> Demands:
         return self._missing_demands
@@ -50,22 +50,44 @@ class RiskPeriodicCheckSaga:
     def handle(self, event: Event) -> RiskPeriodicCheckSagaStep:
         match event:
             case EarningsRecalculated():
-                return None
+                self._earnings_value = event.earnings
+                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case ProjectAllocationsDemandsScheduled():
-                return None
+                self._missing_demands = event.missing_demands
+                if self.are_demands_satisfied():
+                    return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
+                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case ProjectAllocationScheduled():
-                return None
+                self._deadline = event.from_to.to
+                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case ResourceTakenOver():
-                return None
+                if event.occurred_at() > self.deadline():
+                    return RiskPeriodicCheckSagaStep.DO_NOTHING
+                return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK
             case CapabilityReleased():
-                return None
+                self._missing_demands = event.missing_demands
+                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case CapabilitiesAllocated():
-                return None
+                self._missing_demands = event.missing_demands
+                if self.are_demands_satisfied():
+                    return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
+                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case _:
                 raise NotImplementedError()
 
     def handle_weekly_check(self, when: datetime) -> RiskPeriodicCheckSagaStep:
-        return None
+        if not self.deadline() or when > self.deadline():
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+        if self.are_demands_satisfied():
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+        days_to_deadline: int = (self.deadline() - when).days
+        if days_to_deadline > self.UPCOMING_DEADLINE_AVAILABILITY_SEARCH:
+            return RiskPeriodicCheckSagaStep.DO_NOTHING
+        if days_to_deadline > self.UPCOMING_DEADLINE_REPLACEMENT_SUGGESTION:
+            return RiskPeriodicCheckSagaStep.FIND_AVAILABLE
+        if self.earnings() > self.RISK_THRESHOLD_VALUE:
+            return RiskPeriodicCheckSagaStep.SUGGEST_REPLACEMENT
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     def project_id(self) -> ProjectAllocationsId:
         return self._project_id

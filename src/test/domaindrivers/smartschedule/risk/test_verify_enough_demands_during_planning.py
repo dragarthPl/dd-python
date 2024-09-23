@@ -59,8 +59,8 @@ class TestVerifyEnoughDemandsDuringPlanning(TestCase):
 
         #  then
         mockito.verify(
-            self.verify_enough_demands_during_planning._VerifyEnoughDemandsDuringPlanning__risk_push_notification,
-            never,  # type: ignore[attr-defined]
+            self.verify_enough_demands_during_planning._VerifyEnoughDemandsDuringPlanning__risk_push_notification,  # type: ignore[attr-defined]
+            never,
         ).notify_about_possible_risk_during_planning(
             project_id, Demands.of(Demand.demand_for(Capability.skill("JAVA")))
         )
