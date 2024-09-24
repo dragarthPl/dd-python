@@ -4,7 +4,6 @@ from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfigu
 from typing import Final
 from unittest import TestCase
 
-import pytest
 import pytz
 from domaindrivers.smartschedule.planning.parallelization.stage import Stage
 from domaindrivers.smartschedule.planning.planning_facade import PlanningFacade
@@ -14,7 +13,13 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 class TestTimeCriticalWaterfall(TestCase):
-    SQL_SCRIPTS: tuple[str] = ("schema-planning.sql",)
+    SQL_SCRIPTS: tuple[str, ...] = (
+        "schema-risk.sql",
+        "schema-planning.sql",
+        "schema-availability.sql",
+        "schema-resources.sql",
+        "schema-allocations.sql",
+    )
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JAN_1_5: Final[TimeSlot] = TimeSlot(
@@ -36,7 +41,6 @@ class TestTimeCriticalWaterfall(TestCase):
         dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
         self.project_facade = dependency_resolver.resolve_dependency(PlanningFacade)
 
-    @pytest.mark.skip(reason="not implemented yet")
     def test_time_critical_waterfall_project_process(self) -> None:
         # given
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("waterfall")

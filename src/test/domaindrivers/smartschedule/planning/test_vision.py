@@ -4,7 +4,6 @@ from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfigu
 from typing import Final
 from unittest import TestCase
 
-import pytest
 import pytz
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
 from domaindrivers.smartschedule.planning.demand import Demand
@@ -19,7 +18,13 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 class TestVision(TestCase):
-    SQL_SCRIPTS: tuple[str] = ("schema-planning.sql",)
+    SQL_SCRIPTS: tuple[str, ...] = (
+        "schema-risk.sql",
+        "schema-planning.sql",
+        "schema-availability.sql",
+        "schema-resources.sql",
+        "schema-allocations.sql",
+    )
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JAN_1: Final[datetime] = datetime.strptime("2020-01-01T00:00:00Z", "%Y-%m-%dT%H:%M:%SZ").astimezone(pytz.UTC)
@@ -45,7 +50,6 @@ class TestVision(TestCase):
         dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
         self.project_facade = dependency_resolver.resolve_dependency(PlanningFacade)
 
-    @pytest.mark.skip(reason="not implemented yet")
     def test_waterfall_project_process(self) -> None:
         # given
         project_id: ProjectId = self.project_facade.add_new_project_with_stages("vision")
@@ -67,12 +71,10 @@ class TestVision(TestCase):
         # then
         project_card: ProjectCard = self.project_facade.load(project_id)
         self.assertTrue(
-            all(
-                stage in project_card.parallelized_stages.print()
-                for stage in [
-                    "stage1 | stage2, stage3",
-                    "stage2, stage3 | stage1",
-                ]
+            project_card.parallelized_stages.print()
+            in (
+                "stage1 | stage2, stage3",
+                "stage2, stage3 | stage1",
             )
         )
 
