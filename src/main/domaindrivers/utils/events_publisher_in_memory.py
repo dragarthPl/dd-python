@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Any, Callable
+from typing import Any, Callable, TypeAlias
 
-from domaindrivers.smartschedule.shared.event import Event
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
+from domaindrivers.smartschedule.shared.private_event import PrivateEvent
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
+
+Event: TypeAlias = PublishedEvent | PrivateEvent
 
 EventHandler = Callable[[Event], Any]
 
