@@ -40,8 +40,10 @@ class RiskPeriodicCheckSaga:
         return not self._missing_demands.all
 
     def missing_demands(self, missing_demands: Demands) -> RiskPeriodicCheckSagaStep:
-        # TODO implement
-        return None
+        self._missing_demands = missing_demands
+        if self.are_demands_satisfied():
+            return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
+        return RiskPeriodicCheckSagaStep.DO_NOTHING
 
     def get_missing_demands(self) -> Demands:
         return self._missing_demands
