@@ -1,18 +1,23 @@
 from datetime import datetime
 from typing import Final
 
+from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.not_satisfied_demands import NotSatisfiedDemands
 from domaindrivers.smartschedule.allocation.project_allocations import ProjectAllocations
+from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 
 
 class CreateHourlyDemandsSummaryService:
     def create(self, project_allocations: list[ProjectAllocations], when: datetime) -> NotSatisfiedDemands:
-        return NotSatisfiedDemands.of(
-            {project_allocation.id: project_allocation.missing_demands() for project_allocation in project_allocations},
-            when,
-        )
+        missing_demands: dict[ProjectAllocationsId, Demands] = {
+            _project_allocation.id: _project_allocation.missing_demands()
+            for _project_allocation in filter(
+                lambda project_allocation: project_allocation.has_time_slot(), project_allocations
+            )
+        }
+        return NotSatisfiedDemands.of(missing_demands, when)
 
 
 class PublishMissingDemandsService:

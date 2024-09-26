@@ -25,8 +25,10 @@ class TestCreateHourlyDemandsSummaryService(TestCase):
         # given
         csharp_project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
         java_project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
-        csharp_project: ProjectAllocations = ProjectAllocations(csharp_project_id, Allocations.none(), self.CSHARP)
-        java_project: ProjectAllocations = ProjectAllocations(java_project_id, Allocations.none(), self.JAVA)
+        csharp_project: ProjectAllocations = ProjectAllocations(
+            csharp_project_id, Allocations.none(), self.CSHARP, self.JAN
+        )
+        java_project: ProjectAllocations = ProjectAllocations(java_project_id, Allocations.none(), self.JAVA, self.JAN)
 
         # when
         result: NotSatisfiedDemands = self.service.create([csharp_project, java_project], self.NOW)
@@ -37,4 +39,21 @@ class TestCreateHourlyDemandsSummaryService(TestCase):
             java_project_id: self.JAVA,
             csharp_project_id: self.CSHARP,
         }
+        self.assertEqual(result.missing_demands, expected_missing_demands)
+
+    def test_takes_into_account_only_projects_with_time_slot(self) -> None:
+        # given
+        with_time_slot_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
+        without_time_slot_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
+        with_time_slot: ProjectAllocations = ProjectAllocations(
+            with_time_slot_id, Allocations.none(), self.CSHARP, self.JAN
+        )
+        without_time_slot: ProjectAllocations = ProjectAllocations(without_time_slot_id, Allocations.none(), self.JAVA)
+
+        # when
+        result: NotSatisfiedDemands = self.service.create([with_time_slot, without_time_slot], self.NOW)
+
+        # then
+        self.assertEqual(self.NOW, result.occurred_at())
+        expected_missing_demands: dict[ProjectAllocationsId, Demands] = {with_time_slot_id: self.CSHARP}
         self.assertEqual(result.missing_demands, expected_missing_demands)
