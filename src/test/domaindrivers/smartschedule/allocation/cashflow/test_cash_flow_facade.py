@@ -8,8 +8,8 @@ from domaindrivers.smartschedule.allocation.cashflow.cost import Cost
 from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.cashflow.income import Income
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.shared.event import Event
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 from mockito import arg_that, mock, mockito
 
 
@@ -51,7 +51,7 @@ class TestCashFlowFacade(TestCase):
 
     def is_earnings_recalculated_event(
         self, project_id: ProjectAllocationsId, earnings: Earnings
-    ) -> Callable[[Event], bool]:
+    ) -> Callable[[PublishedEvent], bool]:
         return (
             lambda event: getattr(event, "project_id") == project_id
             and getattr(event, "earnings") == earnings

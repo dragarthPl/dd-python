@@ -5,11 +5,11 @@ from uuid import UUID
 from attr import frozen
 from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 
 
 @frozen
-class EarningsRecalculated(Event):
+class EarningsRecalculated(PublishedEvent):
     uuid: UUID
     project_id: ProjectAllocationsId
     earnings: Earnings

@@ -1,10 +1,7 @@
-import uuid
 from datetime import datetime, timedelta
 from unittest import TestCase
 
 import pytz
-from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
-from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capability_id import (
     AllocatableCapabilityId,
 )
@@ -13,9 +10,6 @@ from domaindrivers.smartschedule.allocation.cashflow.earnings_recalculated impor
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
-from domaindrivers.smartschedule.allocation.project_allocations_demands_scheduled import (
-    ProjectAllocationsDemandsScheduled,
-)
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_taken_over import ResourceTakenOver
@@ -44,7 +38,7 @@ class TestRiskPeriodicCheckSaga(TestCase):
         )
 
         # then
-        self.assertEqual(self.SINGLE_DEMAND, saga.missing_demands())
+        self.assertEqual(self.SINGLE_DEMAND, saga.get_missing_demands())
 
     def test_updates_deadline_on_deadline_set(self) -> None:
         # given
@@ -57,20 +51,30 @@ class TestRiskPeriodicCheckSaga(TestCase):
         # then
         self.assertEqual(self.PROJECT_DATES.to, saga.deadline())
 
-    def test_updates_demands_on_schedule_change(self) -> None:
+    def test_update_missing_demands(self) -> None:
         # given
         saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
             project_id=self.PROJECT_ID, missing_demands=self.SINGLE_DEMAND
         )
 
         # when
-        next_step: RiskPeriodicCheckSagaStep = saga.handle(
-            ProjectAllocationsDemandsScheduled.of(self.PROJECT_ID, self.MANY_DEMANDS, datetime.now(pytz.UTC))
-        )
+        next_step: RiskPeriodicCheckSagaStep = saga.missing_demands(self.MANY_DEMANDS)
 
         # then
         self.assertEqual(RiskPeriodicCheckSagaStep.DO_NOTHING, next_step)
-        self.assertEqual(self.MANY_DEMANDS, saga.missing_demands())
+        self.assertEqual(self.MANY_DEMANDS, saga.get_missing_demands())
+
+    def test_no_new_steps_on_when_missing_demands(self) -> None:
+        # given
+        saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
+            project_id=self.PROJECT_ID, missing_demands=self.MANY_DEMANDS
+        )
+
+        # when
+        next_step: RiskPeriodicCheckSagaStep = saga.missing_demands(self.MANY_DEMANDS)
+
+        # then
+        self.assertEqual(RiskPeriodicCheckSagaStep.DO_NOTHING, next_step)
 
     def test_updated_earnings_on_earnings_recalculated(self) -> None:
         # given
@@ -94,7 +98,7 @@ class TestRiskPeriodicCheckSaga(TestCase):
         self.assertEqual(Earnings.of(900), saga.earnings())
         self.assertEqual(RiskPeriodicCheckSagaStep.DO_NOTHING, next_step)
 
-    def test_informs_about_demands_satisfied_when_demands_rescheduled(self) -> None:
+    def test_informs_about_demands_satisfied_when_no_missing_demands(self) -> None:
         # given
         saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
             project_id=self.PROJECT_ID, missing_demands=self.MANY_DEMANDS
@@ -102,52 +106,18 @@ class TestRiskPeriodicCheckSaga(TestCase):
         # and
         saga.handle(EarningsRecalculated.of(self.PROJECT_ID, Earnings.of(1000), datetime.now(pytz.UTC)))
         # when
-        still_missing: RiskPeriodicCheckSagaStep = saga.handle(
-            ProjectAllocationsDemandsScheduled.of(self.PROJECT_ID, self.SINGLE_DEMAND, datetime.now(pytz.UTC))
-        )
-        zero_demands: RiskPeriodicCheckSagaStep = saga.handle(
-            ProjectAllocationsDemandsScheduled.of(self.PROJECT_ID, Demands.none(), datetime.now(pytz.UTC))
-        )
+        still_missing: RiskPeriodicCheckSagaStep = saga.missing_demands(self.SINGLE_DEMAND)
+        zero_demands: RiskPeriodicCheckSagaStep = saga.missing_demands(Demands.none())
 
         # then
         self.assertEqual(RiskPeriodicCheckSagaStep.DO_NOTHING, still_missing)
         self.assertEqual(RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED, zero_demands)
-
-    def test_notify_about_no_missing_demands_on_capability_allocated(self) -> None:
-        # given
-        saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
-            project_id=self.PROJECT_ID, missing_demands=self.SINGLE_DEMAND
-        )
-
-        # when
-        next_step: RiskPeriodicCheckSagaStep = saga.handle(
-            CapabilitiesAllocated.of(uuid.uuid4(), self.PROJECT_ID, Demands.none(), datetime.now(pytz.UTC))
-        )
-
-        # then
-        self.assertEqual(RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED, next_step)
-
-    def test_no_new_steps_on_capability_allocated_when_missing_demands(self) -> None:
-        # given
-        saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
-            project_id=self.PROJECT_ID, missing_demands=self.MANY_DEMANDS
-        )
-
-        # when
-        next_step: RiskPeriodicCheckSagaStep = saga.handle(
-            CapabilitiesAllocated.of(uuid.uuid4(), self.PROJECT_ID, self.SINGLE_DEMAND, datetime.now(pytz.UTC))
-        )
-
-        # then
-        self.assertEqual(RiskPeriodicCheckSagaStep.DO_NOTHING, next_step)
 
     def test_do_nothing_on_resource_taken_over_when_after_deadline(self) -> None:
         # given
         saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
             project_id=self.PROJECT_ID, missing_demands=self.MANY_DEMANDS
         )
-        # and
-        saga.handle(CapabilitiesAllocated.of(uuid.uuid4(), self.PROJECT_ID, self.SINGLE_DEMAND, datetime.now(pytz.UTC)))
         # and
         saga.handle(ProjectAllocationScheduled.of(self.PROJECT_ID, self.PROJECT_DATES, datetime.now(pytz.UTC)))
 
@@ -173,8 +143,6 @@ class TestRiskPeriodicCheckSaga(TestCase):
             project_id=self.PROJECT_ID, missing_demands=self.MANY_DEMANDS
         )
         # and
-        saga.handle(CapabilitiesAllocated.of(uuid.uuid4(), self.PROJECT_ID, self.MANY_DEMANDS, datetime.now(pytz.UTC)))
-        # and
         saga.handle(ProjectAllocationScheduled.of(self.PROJECT_ID, self.PROJECT_DATES, datetime.now(pytz.UTC)))
 
         # when
@@ -196,13 +164,9 @@ class TestRiskPeriodicCheckSaga(TestCase):
         saga: RiskPeriodicCheckSaga = RiskPeriodicCheckSaga(
             project_id=self.PROJECT_ID, missing_demands=self.SINGLE_DEMAND
         )
-        # and
-        saga.handle(CapabilitiesAllocated.of(uuid.uuid4(), self.PROJECT_ID, Demands.none(), datetime.now(pytz.UTC)))
 
         # when
-        next_step: RiskPeriodicCheckSagaStep = saga.handle(
-            CapabilityReleased.of(self.PROJECT_ID, self.SINGLE_DEMAND, datetime.now(pytz.UTC))
-        )
+        next_step: RiskPeriodicCheckSagaStep = saga.missing_demands(self.SINGLE_DEMAND)
 
         # then
         self.assertEqual(RiskPeriodicCheckSagaStep.DO_NOTHING, next_step)
@@ -215,7 +179,7 @@ class TestRiskPeriodicCheckSaga(TestCase):
         # and
         saga.handle(EarningsRecalculated.of(self.PROJECT_ID, Earnings.of(1000), datetime.now(pytz.UTC)))
         # and
-        saga.handle(CapabilitiesAllocated.of(uuid.uuid4(), self.PROJECT_ID, Demands.none(), datetime.now(pytz.UTC)))
+        saga.missing_demands(Demands.none())
         # and
         saga.handle(ProjectAllocationScheduled.of(self.PROJECT_ID, self.PROJECT_DATES, datetime.now(pytz.UTC)))
 

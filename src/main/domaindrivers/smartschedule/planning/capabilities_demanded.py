@@ -5,11 +5,11 @@ from uuid import UUID
 from attr import frozen
 from domaindrivers.smartschedule.planning.demands import Demands
 from domaindrivers.smartschedule.planning.project_id import ProjectId
-from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 
 
 @frozen
-class CapabilitiesDemanded(Event):
+class CapabilitiesDemanded(PublishedEvent):
     uuid: UUID
     project_id: ProjectId
     demands: Demands

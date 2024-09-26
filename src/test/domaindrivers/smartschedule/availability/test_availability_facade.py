@@ -10,8 +10,8 @@ from domaindrivers.smartschedule.availability.calendar import Calendar
 from domaindrivers.smartschedule.availability.owner import Owner
 from domaindrivers.smartschedule.availability.resource_grouped_availability import ResourceGroupedAvailability
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
-from domaindrivers.smartschedule.shared.event import Event
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from mockito import arg_that, mock
 
@@ -229,7 +229,9 @@ class TestAvailabilityFacade(TestCase):
             arg_that(self.taken_over(resource_id, initial_owner, one_day))
         )
 
-    def taken_over(self, resource_id: ResourceId, initial_owner: Owner, one_day: TimeSlot) -> Callable[[Event], bool]:
+    def taken_over(
+        self, resource_id: ResourceId, initial_owner: Owner, one_day: TimeSlot
+    ) -> Callable[[PublishedEvent], bool]:
         return lambda event: (
             getattr(event, "resource_id") == resource_id
             and getattr(event, "slot") == one_day

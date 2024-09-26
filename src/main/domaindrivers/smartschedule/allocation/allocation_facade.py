@@ -173,17 +173,20 @@ class AllocationFacade:
             project_allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_throw()
-            project_allocations.define_slot(from_to, datetime.now(pytz.UTC))
-            self.__events_publisher.publish(ProjectAllocationScheduled.of(project_id, from_to, datetime.now(pytz.UTC)))
+            project_dates_set: Optional[ProjectAllocationScheduled] = project_allocations.define_slot(
+                from_to, datetime.now(pytz.UTC)
+            )
+            project_dates_set.if_present(self.__events_publisher.publish)
 
     def schedule_project_allocation_demands(self, project_id: ProjectAllocationsId, demands: Demands) -> None:
         with self.__session.begin_nested():
             project_allocations: ProjectAllocations = self.__project_allocations_repository.find_by_id(
                 project_id
             ).or_else_get(lambda: ProjectAllocations.empty(project_id))
-            event: Optional[ProjectAllocationsDemandsScheduled] = project_allocations.add_demands(
+            event: Optional[ProjectAllocationsDemandsScheduled] = project_allocations.add_demands(  # noqa: F841
                 demands,
                 datetime.now(pytz.UTC),
             )
-            event.if_present(self.__events_publisher.publish)
+            # event could be stored in a local store
+            # always remember about transactional boundaries
             self.__project_allocations_repository.save(project_allocations)

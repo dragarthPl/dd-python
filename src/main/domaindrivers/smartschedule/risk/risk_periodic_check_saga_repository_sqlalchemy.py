@@ -16,6 +16,10 @@ class RiskPeriodicCheckSagaRepositorySqlalchemy(RiskPeriodicCheckSagaRepository)
     def save(self, risk_periodic_check_saga: RiskPeriodicCheckSaga) -> None:
         self.session.add(risk_periodic_check_saga)
 
+    def save_all(self, risk_periodic_check_sagas: list[RiskPeriodicCheckSaga]) -> list[RiskPeriodicCheckSaga]:
+        self.session.add_all(risk_periodic_check_sagas)
+        return risk_periodic_check_sagas
+
     def get_by_id(self, risk_saga_id: RiskPeriodicCheckSagaId) -> RiskPeriodicCheckSaga:
         return self.session.query(RiskPeriodicCheckSaga).filter_by(_risk_saga_id=risk_saga_id.id()).first()
 

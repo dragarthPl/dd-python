@@ -4,20 +4,15 @@ from datetime import datetime
 import pytz
 from attr import define
 from attrs import field
-from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
-from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
 from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
 from domaindrivers.smartschedule.allocation.cashflow.earnings_recalculated import EarningsRecalculated
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
-from domaindrivers.smartschedule.allocation.project_allocations_demands_scheduled import (
-    ProjectAllocationsDemandsScheduled,
-)
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.availability.resource_taken_over import ResourceTakenOver
 from domaindrivers.smartschedule.risk.risk_periodic_check_saga_id import RiskPeriodicCheckSagaId
 from domaindrivers.smartschedule.risk.risk_periodic_check_saga_step import RiskPeriodicCheckSagaStep
-from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 
 
 @define(slots=False)
@@ -44,34 +39,25 @@ class RiskPeriodicCheckSaga:
     def are_demands_satisfied(self) -> bool:
         return not self._missing_demands.all
 
-    def missing_demands(self) -> Demands:
+    def missing_demands(self, missing_demands: Demands) -> RiskPeriodicCheckSagaStep:
+        # TODO implement
+        return None
+
+    def get_missing_demands(self) -> Demands:
         return self._missing_demands
 
-    def handle(self, event: Event) -> RiskPeriodicCheckSagaStep:
+    def handle(self, event: PublishedEvent) -> RiskPeriodicCheckSagaStep:
         match event:
-            case EarningsRecalculated():
-                self._earnings_value = event.earnings
-                return RiskPeriodicCheckSagaStep.DO_NOTHING
-            case ProjectAllocationsDemandsScheduled():
-                self._missing_demands = event.missing_demands
-                if self.are_demands_satisfied():
-                    return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
-                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case ProjectAllocationScheduled():
                 self._deadline = event.from_to.to
+                return RiskPeriodicCheckSagaStep.DO_NOTHING
+            case EarningsRecalculated():
+                self._earnings_value = event.earnings
                 return RiskPeriodicCheckSagaStep.DO_NOTHING
             case ResourceTakenOver():
                 if event.occurred_at() > self.deadline():
                     return RiskPeriodicCheckSagaStep.DO_NOTHING
                 return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK
-            case CapabilityReleased():
-                self._missing_demands = event.missing_demands
-                return RiskPeriodicCheckSagaStep.DO_NOTHING
-            case CapabilitiesAllocated():
-                self._missing_demands = event.missing_demands
-                if self.are_demands_satisfied():
-                    return RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_DEMANDS_SATISFIED
-                return RiskPeriodicCheckSagaStep.DO_NOTHING
             case _:
                 raise NotImplementedError()
 

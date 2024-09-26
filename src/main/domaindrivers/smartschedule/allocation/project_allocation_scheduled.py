@@ -4,12 +4,13 @@ from uuid import UUID
 
 from attr import frozen
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.private_event import PrivateEvent
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 @frozen
-class ProjectAllocationScheduled(Event):
+class ProjectAllocationScheduled(PublishedEvent, PrivateEvent):
     uuid: UUID
 
     project_id: ProjectAllocationsId

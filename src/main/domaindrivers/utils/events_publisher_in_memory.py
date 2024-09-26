@@ -1,9 +1,13 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Callable
+from typing import Callable, TypeAlias
 
 from domaindrivers.smartschedule.shared.application_event import ApplicationEvent
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
+from domaindrivers.smartschedule.shared.private_event import PrivateEvent
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
+
+Event: TypeAlias = PublishedEvent | PrivateEvent
 
 
 class EventsSubscriber(ABC):
@@ -16,7 +20,7 @@ class EventBus(EventsPublisher, EventsSubscriber, ABC):
 
 
 class InMemoryEventBus(EventBus):
-    _all_handlers: dict[str, list[Callable[[ApplicationEvent], None]]]
+    _all_handlers: dict[str, list[Callable[..., None]]]
 
     def __init__(self) -> None:
         self._all_handlers = defaultdict(list)
@@ -28,4 +32,4 @@ class InMemoryEventBus(EventBus):
 
     def subscribe(self, event_handler: Callable[[ApplicationEvent], None], *event_types: str) -> None:
         for event_type in event_types:
-            self._all_handlers[event_type].append(event_handler)  # type: ignore
+            self._all_handlers[event_type].append(event_handler)

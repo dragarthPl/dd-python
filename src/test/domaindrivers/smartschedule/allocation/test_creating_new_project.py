@@ -10,8 +10,8 @@ from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.event import Event
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 from mockito import arg_that, mock
 
@@ -68,7 +68,7 @@ class TestCreatingNewProject(TestCase):
 
     def is_project_allocations_scheduled_event(
         self, project_id: ProjectAllocationsId, time_slot: TimeSlot
-    ) -> Callable[[Event], bool]:
+    ) -> Callable[[PublishedEvent], bool]:
         return lambda event: (
             getattr(event, "uuid") is not None
             and getattr(event, "project_id") == project_id

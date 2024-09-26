@@ -3,8 +3,6 @@ from functools import reduce
 from typing import Final
 
 import pytz
-from domaindrivers.smartschedule.allocation.capabilities_allocated import CapabilitiesAllocated
-from domaindrivers.smartschedule.allocation.capability_released import CapabilityReleased
 from domaindrivers.smartschedule.allocation.capabilityscheduling.allocatable_capabilities_summary import (
     AllocatableCapabilitiesSummary,
 )
@@ -12,18 +10,16 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_find
 from domaindrivers.smartschedule.allocation.cashflow.earnings_recalculated import EarningsRecalculated
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
+from domaindrivers.smartschedule.allocation.not_satisfied_demands import NotSatisfiedDemands
 from domaindrivers.smartschedule.allocation.potential_transfers_service import PotentialTransfersService
 from domaindrivers.smartschedule.allocation.project_allocation_scheduled import ProjectAllocationScheduled
-from domaindrivers.smartschedule.allocation.project_allocations_demands_scheduled import (
-    ProjectAllocationsDemandsScheduled,
-)
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.availability.resource_taken_over import ResourceTakenOver
 from domaindrivers.smartschedule.risk.risk_periodic_check_saga import RiskPeriodicCheckSaga
 from domaindrivers.smartschedule.risk.risk_periodic_check_saga_repository import RiskPeriodicCheckSagaRepository
 from domaindrivers.smartschedule.risk.risk_periodic_check_saga_step import RiskPeriodicCheckSagaStep
 from domaindrivers.smartschedule.risk.risk_push_notification import RiskPushNotification
-from domaindrivers.smartschedule.shared.event import Event
+from domaindrivers.smartschedule.shared.published_event import PublishedEvent
 
 
 class RiskPeriodicCheckSagaDispatcher:
@@ -44,28 +40,16 @@ class RiskPeriodicCheckSagaDispatcher:
         self.__capability_finder = capability_finder
         self.__risk_push_notification = risk_push_notification
 
-    def handle(self, event: Event) -> None:
+    def handle(self, event: PublishedEvent) -> None:
         match event:
-            case ProjectAllocationsDemandsScheduled():
-                self.handle_ProjectAllocationsDemandsScheduled(event)
             case EarningsRecalculated():
                 self.handle_EarningsRecalculated(event)
             case ProjectAllocationScheduled():
                 self.handle_ProjectAllocationScheduled(event)
-            case CapabilitiesAllocated():
-                self.handle_CapabilitiesAllocated(event)
+            case NotSatisfiedDemands():
+                self.handle_NotSatisfiedDemands(event)
             case ResourceTakenOver():
                 self.handle_ResourceTakenOver(event)
-
-    # @EventListener
-    # remember about transactions spanning saga and potential external system
-    def handle_ProjectAllocationsDemandsScheduled(self, event: ProjectAllocationsDemandsScheduled) -> None:
-        found: RiskPeriodicCheckSaga = self.__risk_saga_repository.find_by_project_id(event.project_id)
-        if not found:
-            found = RiskPeriodicCheckSaga(project_id=event.project_id, missing_demands=event.missing_demands)
-        next_step: RiskPeriodicCheckSagaStep = found.handle(event)
-        self.__risk_saga_repository.save(found)
-        self.__perform(next_step, found)
 
     # @EventListener
     # remember about transactions spanning saga and potential external system
@@ -80,26 +64,25 @@ class RiskPeriodicCheckSagaDispatcher:
     # @EventListener
     # remember about transactions spanning saga and potential external system
     def handle_ProjectAllocationScheduled(self, event: ProjectAllocationScheduled) -> None:
-        found: RiskPeriodicCheckSaga = self.__risk_saga_repository.find_by_project_id(event.project_id)
+        found: RiskPeriodicCheckSaga = self.__risk_saga_repository.find_by_project_id_or_create(event.project_id)
         next_step: RiskPeriodicCheckSagaStep = found.handle(event)
         self.__risk_saga_repository.save(found)
         self.__perform(next_step, found)
 
     # @EventListener
     # remember about transactions spanning saga and potential external system
-    def handle_CapabilitiesAllocated(self, event: CapabilitiesAllocated) -> None:
-        saga: RiskPeriodicCheckSaga = self.__risk_saga_repository.find_by_project_id(event.project_id)
-        next_step: RiskPeriodicCheckSagaStep = saga.handle(event)
-        self.__risk_saga_repository.save(saga)
-        self.__perform(next_step, saga)
-
-    # @EventListener
-    # remember about transactions spanning saga and potential external system
-    def handle_CapabilityReleased(self, event: CapabilityReleased) -> None:
-        saga: RiskPeriodicCheckSaga = self.__risk_saga_repository.find_by_project_id(event.project_id)
-        next_step: RiskPeriodicCheckSagaStep = saga.handle(event)
-        self.__risk_saga_repository.save(saga)
-        self.__perform(next_step, saga)
+    def handle_NotSatisfiedDemands(self, event: NotSatisfiedDemands) -> None:
+        sagas: list[RiskPeriodicCheckSaga] = self.__risk_saga_repository.find_by_project_id_in_or_else_create(
+            list(event.missing_demands.keys())
+        )
+        next_steps: dict[RiskPeriodicCheckSaga, RiskPeriodicCheckSagaStep] = {}
+        for saga in sagas:
+            missing_demands: Demands = event.missing_demands.get(saga.project_id())
+            next_step: RiskPeriodicCheckSagaStep = saga.missing_demands(missing_demands)
+            next_steps[saga] = next_step
+        self.__risk_saga_repository.save_all(sagas)
+        for saga, next_step in next_steps.items():
+            self.__perform(next_step, saga)
 
     # @EventListener
     # remember about transactions spanning saga and potential external system
@@ -136,18 +119,16 @@ class RiskPeriodicCheckSagaDispatcher:
                 self.__handle_simulate_relocation(saga)
             case RiskPeriodicCheckSagaStep.NOTIFY_ABOUT_POSSIBLE_RISK:
                 self.__risk_push_notification.notify_about_possible_risk(saga.project_id())
-            case _:
-                raise ValueError(f"Unknown step: {next_step}")
 
     def __handle_find_available_for(self, saga: RiskPeriodicCheckSaga) -> None:
         replacements: dict[Demand, AllocatableCapabilitiesSummary] = self.__find_available_replacements_for(
-            saga.missing_demands()
+            saga.get_missing_demands()
         )
         if any(reduce(lambda x, y: x + y, (ac.all for ac in replacements.values()))):  # type: ignore
             self.__risk_push_notification.notify_about_availability(saga.project_id(), replacements)
 
     def __handle_simulate_relocation(self, saga: RiskPeriodicCheckSaga) -> None:
-        for demand, replacements in self.__find_possible_replacements(saga.missing_demands()).items():
+        for demand, replacements in self.__find_possible_replacements(saga.get_missing_demands()).items():
             for replacement in replacements.all:
                 profit_after_moving_capabilities: float = (
                     self.__potential_transfers_service.profit_after_moving_capabilities(

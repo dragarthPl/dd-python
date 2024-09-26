@@ -2,20 +2,17 @@ from datetime import datetime
 from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
 from test.domaindrivers.smartschedule.fixtures import contains_only_once_elements_of
 from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
-from typing import Callable, cast, Final, Type
+from typing import cast, Final, Type
 from unittest import TestCase
 
-import mockito
 from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
 from domaindrivers.smartschedule.allocation.demand import Demand
 from domaindrivers.smartschedule.allocation.demands import Demands
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.allocation.projects_allocations_summary import ProjectsAllocationsSummary
 from domaindrivers.smartschedule.shared.capability.capability import Capability
-from domaindrivers.smartschedule.shared.event import Event
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
-from mockito import arg_that, mock
 
 
 class TestDemandScheduling(TestCase):
@@ -49,26 +46,3 @@ class TestDemandScheduling(TestCase):
         for demand in summary.demands.get(project_id).all:
             self.assertEqual(demand, self.JAVA)
         self.assertTrue(contains_only_once_elements_of(summary.demands.get(project_id).all, Demands.of(self.JAVA).all))
-
-    def test_project_demands_scheduled_event_is_emitted_after_defining_demands(self) -> None:
-        # given
-        project_id: ProjectAllocationsId = ProjectAllocationsId.new_one()
-
-        # when
-        self.allocation_facade._AllocationFacade__events_publisher = mock()  # type: ignore[attr-defined]
-        self.allocation_facade.schedule_project_allocation_demands(project_id, Demands.of(self.JAVA))
-
-        # then
-        mockito.verify(self.allocation_facade._AllocationFacade__events_publisher).publish(  # type: ignore[attr-defined]
-            arg_that(self.is_project_demands_scheduled_event(project_id, Demands.of(self.JAVA)))
-        )
-
-    def is_project_demands_scheduled_event(
-        self, project_id: ProjectAllocationsId, demands: Demands
-    ) -> Callable[[Event], bool]:
-        return lambda event: (
-            getattr(event, "uuid") is not None
-            and getattr(event, "project_id") == project_id
-            and getattr(event, "missing_demands") == demands
-            and event.occurred_at() is not None
-        )
