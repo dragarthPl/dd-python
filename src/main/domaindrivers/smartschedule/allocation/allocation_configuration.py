@@ -4,7 +4,9 @@ from domaindrivers.smartschedule.allocation.capabilityscheduling.capability_find
 from domaindrivers.smartschedule.allocation.cashflow.cash_flow_facade import CashFlowFacade
 from domaindrivers.smartschedule.allocation.potential_transfers_service import PotentialTransfersService
 from domaindrivers.smartschedule.allocation.project_allocations_repository import ProjectAllocationsRepository
-from domaindrivers.smartschedule.allocation.project_allocations_repository_impl import ProjectAllocationsRepositoryImpl
+from domaindrivers.smartschedule.allocation.project_allocations_sqlalchemy_repository import (
+    ProjectAllocationsSqlalchemyRepository,
+)
 from domaindrivers.smartschedule.availability.availability_facade import AvailabilityFacade
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.simulation.simulation_facade import SimulationFacade
@@ -14,7 +16,7 @@ from sqlalchemy.orm import Session
 
 class AllocationConfiguration(Module):
     def configure(self, binder: injector.Binder) -> None:
-        binder.bind(ProjectAllocationsRepository, to=ProjectAllocationsRepositoryImpl)
+        binder.bind(ProjectAllocationsRepository, to=ProjectAllocationsSqlalchemyRepository)
         pass
 
     @singleton

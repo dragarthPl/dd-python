@@ -1,39 +1,23 @@
+from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Sequence
 
 from domaindrivers.smartschedule.allocation.project_allocations import ProjectAllocations
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
-from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
-from domaindrivers.storage.repository import Repository
-from sqlalchemy import RowMapping, text
+from domaindrivers.utils.optional import Optional
 
 
-class ProjectAllocationsRepository(Repository[ProjectAllocations, ProjectAllocationsId]):  # type: ignore
-    def find_all_containing_date(self, when: datetime) -> list[ProjectAllocations]:
-        statement = text("SELECT * FROM project_allocations WHERE from_date <= :when AND to_date > :when")
-        result = self.session.execute(
-            statement,
-            {
-                "when": when,
-            },
-        )
-        return ProjectAllocationsRowMapper.row_mapper(result.mappings().all())
+class ProjectAllocationsRepository(ABC):
+    @abstractmethod
+    def find_all_containing_date(self, when: datetime) -> list[ProjectAllocations]: ...
 
+    @abstractmethod
+    def find_by_id(self, project_id: ProjectAllocationsId) -> Optional[ProjectAllocations]: ...
 
-class ProjectAllocationsRowMapper:
-    @staticmethod
-    def single_row_mapper(row: RowMapping) -> ProjectAllocations:
-        project_id = ProjectAllocationsId(row["project_allocations_id"])
-        allocations = row["allocations"]
-        scheduled_demands = row["demands"]
-        time_slot = TimeSlot(row.get("from_date"), row.get("to_date"))
-        return ProjectAllocations(
-            project_id,
-            allocations,
-            scheduled_demands,
-            time_slot,
-        )
+    @abstractmethod
+    def save(self, project: ProjectAllocations) -> ProjectAllocations: ...
 
-    @classmethod
-    def row_mapper(cls, rows: Sequence[RowMapping]) -> list[ProjectAllocations]:
-        return [cls.single_row_mapper(row) for row in rows]
+    @abstractmethod
+    def find_all_by_id(self, project_ids: set[ProjectAllocationsId]) -> list[ProjectAllocations]: ...
+
+    @abstractmethod
+    def find_all(self) -> list[ProjectAllocations]: ...

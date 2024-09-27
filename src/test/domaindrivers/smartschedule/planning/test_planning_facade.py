@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
-from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
-from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
+from test.domaindrivers.smartschedule.planning.planning_test_configuration import (
+    InMemoryProjectRepository,
+    PlanningTestConfiguration,
+)
 from unittest import TestCase
 
 from domaindrivers.smartschedule.availability.resource_id import ResourceId
@@ -14,17 +16,20 @@ from domaindrivers.smartschedule.planning.project_card import ProjectCard
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.schedule.schedule import Schedule
 from domaindrivers.smartschedule.shared.capability.capability import Capability
+from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from mockito import mock
 
 
 class TestPlanningFacade(TestCase):
-    SQL_SCRIPTS: tuple[str, ...] = ("schema-planning.sql", "schema-availability.sql")
-    test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
+    events_publisher: EventsPublisher
     project_facade: PlanningFacade
 
     def setUp(self) -> None:
-        dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
-        self.project_facade = dependency_resolver.resolve_dependency(PlanningFacade)
+        self.events_publisher = mock()
+        self.project_facade = PlanningTestConfiguration.planning_facade(
+            self.events_publisher, InMemoryProjectRepository()
+        )
 
     def test_can_create_project_and_load_project_card(self) -> None:
         # given
