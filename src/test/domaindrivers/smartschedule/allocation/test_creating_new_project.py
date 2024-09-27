@@ -1,7 +1,9 @@
-from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
-from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
-from typing import Callable, cast, Type
+from test.domaindrivers.smartschedule.allocation.in_memory_project_allocations_repository import (
+    InMemoryProjectAllocationsRepository,
+)
+from typing import Callable
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 import mockito
 from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
@@ -17,8 +19,6 @@ from mockito import arg_that, mock
 
 
 class TestCreatingNewProject(TestCase):
-    SQL_SCRIPTS: tuple[str] = ("schema-allocations.sql",)
-    test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
     allocation_facade: AllocationFacade
     events_publisher: EventsPublisher
 
@@ -26,9 +26,14 @@ class TestCreatingNewProject(TestCase):
     FEB: TimeSlot = TimeSlot.create_daily_time_slot_at_utc(2021, 2, 1)
 
     def setUp(self) -> None:
-        dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
-        self.allocation_facade = dependency_resolver.resolve_dependency(cast(Type[AllocationFacade], AllocationFacade))
-        self.events_publisher = dependency_resolver.resolve_dependency(cast(Type[EventsPublisher], EventsPublisher))
+        self.events_publisher = mock()
+        self.allocation_facade = AllocationFacade(
+            MagicMock(),
+            InMemoryProjectAllocationsRepository(),
+            mock(),
+            mock(),
+            self.events_publisher,
+        )
 
     def test_can_create_new_project(self) -> None:
         # given

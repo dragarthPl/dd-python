@@ -2,12 +2,13 @@ import injector
 from domaindrivers.smartschedule.planning.project import Project
 from domaindrivers.smartschedule.planning.project_id import ProjectId
 from domaindrivers.smartschedule.planning.project_repository import ProjectRepository
+from domaindrivers.storage.repository import Repository
 from domaindrivers.utils.optional import Optional
 from sqlalchemy import column, or_
 from sqlalchemy.orm import Session
 
 
-class ProjectRepositorySqlalchemy(ProjectRepository):
+class ProjectRepositorySqlalchemy(ProjectRepository, Repository[Project, ProjectId]):
     @injector.inject
     def __init__(self, session: Session) -> None:
         self.session = session
@@ -28,6 +29,9 @@ class ProjectRepositorySqlalchemy(ProjectRepository):
             .where(or_(*[column("project_id") == project_id.id() for project_id in ids]))
             .all()
         )
+
+    def find_all_by_id_in(self, project_id: set[ProjectId]) -> list[Project]:
+        return self.session.query(Project).where(or_(*[column("project_id") == _id for _id in project_id])).all()
 
     def find_all(self) -> list[Project]:
         return self.session.query(Project).all()

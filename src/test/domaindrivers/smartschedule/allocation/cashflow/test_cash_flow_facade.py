@@ -1,8 +1,9 @@
-from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
-from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
-from typing import Callable, cast, Type
+from datetime import datetime
+from test.domaindrivers.smartschedule.allocation.cashflow.cash_flow_test_configuration import CashFlowTestConfiguration
+from typing import Callable, Final
 from unittest import TestCase
 
+import mockito
 from domaindrivers.smartschedule.allocation.cashflow.cash_flow_facade import CashFlowFacade
 from domaindrivers.smartschedule.allocation.cashflow.cost import Cost
 from domaindrivers.smartschedule.allocation.cashflow.earnings import Earnings
@@ -10,19 +11,18 @@ from domaindrivers.smartschedule.allocation.cashflow.income import Income
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.published_event import PublishedEvent
-from mockito import arg_that, mock, mockito
+from mockito import arg_that, mock
 
 
 class TestCashFlowFacade(TestCase):
-    SQL_SCRIPTS: tuple[str] = ("schema-cashflow.sql",)
-    test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
-    cash_flow_facade: CashFlowFacade
+    NOW: Final[datetime] = datetime.now()
+
     events_publisher: EventsPublisher
+    cash_flow_facade: CashFlowFacade
 
     def setUp(self) -> None:
-        dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
-        self.cash_flow_facade = dependency_resolver.resolve_dependency(CashFlowFacade)
-        self.events_publisher = dependency_resolver.resolve_dependency(cast(Type[EventsPublisher], EventsPublisher))
+        self.events_publisher = mock()
+        self.cash_flow_facade = CashFlowTestConfiguration.cash_flow_facade(self.events_publisher)
 
     def test_can_save_cash_flow(self) -> None:
         # given

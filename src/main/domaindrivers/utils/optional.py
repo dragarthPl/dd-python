@@ -50,3 +50,7 @@ class Optional(Generic[T]):
 
     def is_empty(self) -> bool:
         return self._value is None
+
+    @classmethod
+    def of_nullable(cls, value: T) -> "Optional[T]":
+        return cls(value)

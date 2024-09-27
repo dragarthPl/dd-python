@@ -133,7 +133,7 @@ class PlanningFacade:
 
     def load_all_by_ids(self, projects_ids: set[ProjectId]) -> list[ProjectCard]:
         return list(
-            map(lambda project: self.__to_summary(project), self.__project_repository.find_all_by_id(projects_ids))
+            map(lambda project: self.__to_summary(project), self.__project_repository.find_all_by_id_in(projects_ids))
         )
 
     def load_all(self) -> list[ProjectCard]:

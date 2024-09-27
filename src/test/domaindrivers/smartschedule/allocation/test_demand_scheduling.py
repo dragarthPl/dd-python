@@ -1,9 +1,11 @@
 from datetime import datetime
-from test.domaindrivers.smartschedule.dependency_resolver import DependencyResolverForTest
+from test.domaindrivers.smartschedule.allocation.in_memory_project_allocations_repository import (
+    InMemoryProjectAllocationsRepository,
+)
 from test.domaindrivers.smartschedule.fixtures import contains_only_once_elements_of
-from test.domaindrivers.smartschedule.test_db_configuration import TestDbConfiguration
-from typing import cast, Final, Type
+from typing import Final
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 from domaindrivers.smartschedule.allocation.allocation_facade import AllocationFacade
 from domaindrivers.smartschedule.allocation.demand import Demand
@@ -13,11 +15,10 @@ from domaindrivers.smartschedule.allocation.projects_allocations_summary import 
 from domaindrivers.smartschedule.shared.capability.capability import Capability
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
+from mockito import mock
 
 
 class TestDemandScheduling(TestCase):
-    SQL_SCRIPTS: tuple[str] = ("schema-allocations.sql",)
-    test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
     allocation_facade: AllocationFacade
     events_publisher: EventsPublisher
 
@@ -28,9 +29,14 @@ class TestDemandScheduling(TestCase):
     )
 
     def setUp(self) -> None:
-        dependency_resolver = DependencyResolverForTest(self.test_db_configuration.data_source().connection_url)
-        self.allocation_facade = dependency_resolver.resolve_dependency(cast(Type[AllocationFacade], AllocationFacade))
-        self.events_publisher = dependency_resolver.resolve_dependency(cast(Type[EventsPublisher], EventsPublisher))
+        self.events_publisher = mock()
+        self.allocation_facade = AllocationFacade(
+            MagicMock(),
+            InMemoryProjectAllocationsRepository(),
+            mock(),
+            mock(),
+            self.events_publisher,
+        )
 
     def test_can_schedule_project_demands(self) -> None:
         # given

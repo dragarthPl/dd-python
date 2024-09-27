@@ -2,12 +2,13 @@ import injector
 from domaindrivers.smartschedule.allocation.cashflow.cashflow import Cashflow
 from domaindrivers.smartschedule.allocation.cashflow.cashflow_repository import CashflowRepository
 from domaindrivers.smartschedule.allocation.project_allocations_id import ProjectAllocationsId
+from domaindrivers.storage.repository import Repository
 from domaindrivers.utils.optional import Optional
 from sqlalchemy import column, or_
 from sqlalchemy.orm import Session
 
 
-class CashflowRepositorySqlalchemy(CashflowRepository):
+class CashflowRepositorySqlalchemy(CashflowRepository, Repository[Cashflow, ProjectAllocationsId]):
     @injector.inject
     def __init__(self, session: Session) -> None:
         self.session = session
