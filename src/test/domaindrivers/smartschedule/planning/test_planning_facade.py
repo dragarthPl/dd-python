@@ -1,8 +1,5 @@
 from datetime import datetime, timedelta
-from test.domaindrivers.smartschedule.planning.planning_test_configuration import (
-    InMemoryProjectRepository,
-    PlanningTestConfiguration,
-)
+from test.domaindrivers.smartschedule.planning.planning_test_configuration import PlanningTestConfiguration
 from typing import Callable
 from unittest import TestCase
 
@@ -29,9 +26,7 @@ class TestPlanningFacade(TestCase):
 
     def setUp(self) -> None:
         self.events_publisher = mock()
-        self.project_facade = PlanningTestConfiguration.planning_facade(
-            self.events_publisher, InMemoryProjectRepository()
-        )
+        self.project_facade = PlanningTestConfiguration().resolve_dependency(PlanningFacade)
 
     def test_can_create_project_and_load_project_card(self) -> None:
         # given

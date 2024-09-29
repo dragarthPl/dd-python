@@ -1,4 +1,4 @@
-from typing import cast, Type, TypeVar
+from typing import Callable, cast, Type, TypeVar
 
 import injector
 from domaindrivers.smartschedule.allocation.allocation_configuration import AllocationConfiguration
@@ -15,7 +15,7 @@ from domaindrivers.smartschedule.risk.risk_configuration import RiskConfiguratio
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from domaindrivers.storage.database import DatabaseModule
 from domaindrivers.utils.events_publisher_in_memory import EventBus, InMemoryEventBus
-from injector import Injector
+from injector import Binder, Injector
 from testcontainers.postgres import PostgresContainer
 
 T = TypeVar("T")
@@ -26,10 +26,10 @@ class DependencyResolverForTest:
     injector: Injector
     __in_memory_event_bus: InMemoryEventBus
 
-    def __init__(self, database_uri: str):
+    def __init__(self, database_uri: str, additional_configure: Callable[[Binder], None] = lambda _: None) -> None:
         self.__in_memory_event_bus = InMemoryEventBus()
 
-        def configure(binder: injector.Binder) -> None:
+        def configure(binder: Binder) -> None:
             binder.bind(
                 cast(Type[EventsPublisher], EventsPublisher),
                 to=self.__in_memory_event_bus,
@@ -50,8 +50,12 @@ class DependencyResolverForTest:
                 ResourceConfiguration(),
                 CapabilityPlanningConfiguration(),
                 RiskConfiguration(),
+                additional_configure,
             ]
         )
+
+    def get_injector(self) -> Injector:
+        return self.injector
 
     def resolve_dependency(self, interface: Type[T]) -> T:
         return self.injector.get(interface)

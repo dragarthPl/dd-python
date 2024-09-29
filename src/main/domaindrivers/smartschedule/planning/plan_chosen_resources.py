@@ -39,25 +39,25 @@ class PlanChosenResources:
     def define_resources_within_dates(
         self, project_id: ProjectId, chosen_resources: set[ResourceId], time_boundaries: TimeSlot
     ) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_chosen_resources(ChosenResources(chosen_resources, time_boundaries))
-            self.__events_publisher.publish(
-                NeededResourcesChosen(project_id, chosen_resources, time_boundaries, datetime.now(pytz.UTC))
-            )
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_chosen_resources(ChosenResources(chosen_resources, time_boundaries))
+        self.__project_repository.save(project)
+        self.__events_publisher.publish(
+            NeededResourcesChosen(project_id, chosen_resources, time_boundaries, datetime.now(pytz.UTC))
+        )
 
     def adjust_stages_to_resource_availability(
         self, project_id: ProjectId, time_boundaries: TimeSlot, *stages: Stage
     ) -> None:
-        with self.__session.begin_nested():
-            needed_resources: set[ResourceId] = self.__needed_resources(list(stages))
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            self.define_resources_within_dates(project_id, needed_resources, time_boundaries)
-            needed_resources_calendars: Calendars = self.__availability_facade.load_calendars(
-                needed_resources, time_boundaries
-            )
-            schedule: Schedule = self.__create_schedule_adjusting_to_calendars(needed_resources_calendars, list(stages))
-            project.add_schedule_direct(schedule)
+        needed_resources: set[ResourceId] = self.__needed_resources(list(stages))
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        self.define_resources_within_dates(project_id, needed_resources, time_boundaries)
+        needed_resources_calendars: Calendars = self.__availability_facade.load_calendars(
+            needed_resources, time_boundaries
+        )
+        schedule: Schedule = self.__create_schedule_adjusting_to_calendars(needed_resources_calendars, list(stages))
+        project.add_schedule_direct(schedule)
+        self.__project_repository.save(project)
 
     def __create_schedule_adjusting_to_calendars(
         self, needed_resources_calendars: Calendars, stages: list[Stage]

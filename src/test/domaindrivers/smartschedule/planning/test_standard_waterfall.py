@@ -21,7 +21,6 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 class TestStandardWaterfall(TestCase):
     SQL_SCRIPTS: tuple[str, ...] = (
         "schema-risk.sql",
-        "schema-planning.sql",
         "schema-availability.sql",
         "schema-resources.sql",
         "schema-allocations.sql",

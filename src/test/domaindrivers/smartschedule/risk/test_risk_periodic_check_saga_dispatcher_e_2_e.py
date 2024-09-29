@@ -35,7 +35,6 @@ class TestRiskPeriodicCheckSagaDispatcherE2E(TestCase):
     PROJECT_DATES: TimeSlot = TimeSlot(datetime.now(pytz.UTC), datetime.now(pytz.UTC) + timedelta(days=20))
 
     SQL_SCRIPTS: tuple[str, ...] = (
-        "schema-planning.sql",
         "schema-availability.sql",
         "schema-resources.sql",
         "schema-allocations.sql",

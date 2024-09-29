@@ -6,7 +6,7 @@ from domaindrivers.smartschedule.planning.parallelization.stage_parallelization 
 from domaindrivers.smartschedule.planning.plan_chosen_resources import PlanChosenResources
 from domaindrivers.smartschedule.planning.planning_facade import PlanningFacade
 from domaindrivers.smartschedule.planning.project_repository import ProjectRepository
-from domaindrivers.smartschedule.planning.project_repository_sqlalchemy import ProjectRepositorySqlalchemy
+from domaindrivers.smartschedule.planning.redis_project_repository import RedisProjectRepository
 from domaindrivers.smartschedule.shared.events_publisher import EventsPublisher
 from injector import Module, provider, singleton
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 class PlanningConfiguration(Module):
     def configure(self, binder: injector.Binder) -> None:
-        binder.bind(cast(type[ProjectRepository], ProjectRepository), to=ProjectRepositorySqlalchemy)
+        binder.bind(cast(type[ProjectRepository], ProjectRepository), to=RedisProjectRepository)
 
     @singleton
     @provider

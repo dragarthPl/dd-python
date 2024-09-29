@@ -18,7 +18,7 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 class TestRD(TestCase):
-    SQL_SCRIPTS: tuple[str, ...] = ("schema-planning.sql", "schema-availability.sql")
+    SQL_SCRIPTS: tuple[str, ...] = ("schema-availability.sql",)
     test_db_configuration: TestDbConfiguration = TestDbConfiguration(scripts=SQL_SCRIPTS)
 
     JANUARY: Final[TimeSlot] = TimeSlot(

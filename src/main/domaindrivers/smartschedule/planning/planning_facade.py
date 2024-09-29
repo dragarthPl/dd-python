@@ -55,74 +55,66 @@ class PlanningFacade:
         return project.id
 
     def define_start_date(self, project_id: ProjectId, possible_start_date: datetime) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_schedule(possible_start_date)
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_schedule(possible_start_date)
+        self.__project_repository.save(project)
 
     def define_project_stages(self, project_id: ProjectId, *stages: Stage) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            parallelized_stages: ParallelStagesList = self.__parallelization.of(set(stages))
-            project.define_stages(parallelized_stages)
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        parallelized_stages: ParallelStagesList = self.__parallelization.of(set(stages))
+        project.define_stages(parallelized_stages)
+        self.__project_repository.save(project)
 
     def add_demands(self, project_id: ProjectId, demands: Demands) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_demands(demands)
-            self.__events_publisher.publish(
-                CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
-            )
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_demands(demands)
+        self.__project_repository.save(project)
+        self.__events_publisher.publish(
+            CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
+        )
 
     def define_demands_per_stage(self, project_id: ProjectId, demands_per_stage: DemandsPerStage) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_demands_per_stage(demands_per_stage)
-            self.__events_publisher.publish(
-                CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
-            )
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_demands_per_stage(demands_per_stage)
+        self.__project_repository.save(project)
+        self.__events_publisher.publish(
+            CapabilitiesDemanded.of(project_id, project.get_all_demands(), datetime.now(pytz.UTC))
+        )
 
     def define_resources_within_dates(
         self, project_id: ProjectId, chosen_resources: set[ResourceId], time_boundaries: TimeSlot
     ) -> None:
-        with self.__session.begin_nested():
-            self.__plan_chosen_resources_service.define_resources_within_dates(
-                project_id, chosen_resources, time_boundaries
-            )
+        self.__plan_chosen_resources_service.define_resources_within_dates(
+            project_id, chosen_resources, time_boundaries
+        )
 
-    # @Transactional
     def adjust_stages_to_resource_availability(
         self, project_id: ProjectId, time_boundaries: TimeSlot, *stages: Stage
     ) -> None:
-        with self.__session.begin_nested():
-            self.__plan_chosen_resources_service.adjust_stages_to_resource_availability(
-                project_id, time_boundaries, *stages
-            )
+        self.__plan_chosen_resources_service.adjust_stages_to_resource_availability(
+            project_id, time_boundaries, *stages
+        )
 
-    # @Transactional
     def plan_critical_stage_with_resource(
         self, project_id: ProjectId, critical_stage: Stage, resource_id: ResourceId, stage_time_slot: TimeSlot
     ) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_schedule_stage(critical_stage, stage_time_slot)
-            self.__events_publisher.publish(
-                CriticalStagePlanned(project_id, stage_time_slot, resource_id, datetime.now(pytz.UTC))
-            )
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_schedule_stage(critical_stage, stage_time_slot)
+        self.__events_publisher.publish(
+            CriticalStagePlanned(project_id, stage_time_slot, resource_id, datetime.now(pytz.UTC))
+        )
+        self.__project_repository.save(project)
 
-    # @Transactional
     def plan_critical_stage(self, project_id: ProjectId, critical_stage: Stage, stage_time_slot: TimeSlot) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_schedule_stage(critical_stage, stage_time_slot)
-            self.__events_publisher.publish(
-                CriticalStagePlanned(project_id, stage_time_slot, None, datetime.now(pytz.UTC))
-            )
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_schedule_stage(critical_stage, stage_time_slot)
+        self.__events_publisher.publish(CriticalStagePlanned(project_id, stage_time_slot, None, datetime.now(pytz.UTC)))
+        self.__project_repository.save(project)
 
-    # @Transactional
     def define_manual_schedule(self, project_id: ProjectId, schedule: Schedule) -> None:
-        with self.__session.begin_nested():
-            project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
-            project.add_schedule_direct(schedule)
+        project: Project = self.__project_repository.find_by_id(project_id).or_else_throw()
+        project.add_schedule_direct(schedule)
+        self.__project_repository.save(project)
 
     def duration_of(self, *stages: Stage) -> timedelta:
         return DurationCalculator().apply(list(stages))

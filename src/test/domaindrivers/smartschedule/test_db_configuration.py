@@ -66,7 +66,7 @@ class TestDbConfiguration:
 
 class TestPostgresSqlContainer(TestCase):
     def test_postgre_sql_container(self) -> None:
-        test_db_configuration = TestDbConfiguration(scripts=("schema-planning.sql",))
+        test_db_configuration = TestDbConfiguration(scripts=("schema-risk.sql",))
         try:
             data_source: DataSource = test_db_configuration.data_source()
             self.assertTrue(data_source.connection_url.startswith("postgresql+psycopg2://"))
