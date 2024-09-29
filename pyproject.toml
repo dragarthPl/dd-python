@@ -36,6 +36,7 @@ sqlalchemy = "^2.0.31"
 testcontainers = {extras = ["postgres"], version = "^4.7.2"}
 psycopg2 = "^2.9.9"
 python-event-sourcery = "^0.3.0"
+redis = "^5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"

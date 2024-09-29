@@ -17,7 +17,6 @@ from mockito import never
 
 class TestVerifyEnoughDemandsDuringPlanning(TestCase):
     SQL_SCRIPTS: tuple[str, ...] = (
-        "schema-planning.sql",
         "schema-availability.sql",
         "schema-resources.sql",
         "schema-risk.sql",

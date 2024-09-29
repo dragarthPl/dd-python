@@ -13,8 +13,9 @@ from sqlalchemy.orm import Session
 
 
 class ProjectAllocationsSqlalchemyRepository(
-    ProjectAllocationsRepository, Repository[ProjectAllocations, ProjectAllocationsId]
-):  # type: ignore
+    ProjectAllocationsRepository,
+    Repository[ProjectAllocations, ProjectAllocationsId],  # type: ignore
+):
     @injector.inject
     def __init__(self, session: Session) -> None:
         self.session = session
