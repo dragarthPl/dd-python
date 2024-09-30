@@ -89,6 +89,9 @@ class ResourceGroupedAvailability:
     def find_blocked_by(self, owner: Owner) -> list[ResourceAvailability]:
         return list(filter(lambda ra: ra.blocked_by() == owner, self.__resource_availabilities))
 
+    def is_entirely_with_parent_id(self, parent_id: ResourceId) -> bool:
+        return all(map(lambda ra: ra.resource_parent_id() == parent_id, self.__resource_availabilities))
+
     def is_entirely_available(self) -> bool:
         return any(map(lambda ra: ra.blocked_by().by_none(), self.__resource_availabilities))
 
