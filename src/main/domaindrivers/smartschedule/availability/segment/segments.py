@@ -8,7 +8,7 @@ from domaindrivers.smartschedule.shared.time_slot.time_slot import TimeSlot
 
 
 class Segments:
-    DEFAULT_SEGMENT_DURATION_IN_MINUTES: Final[int] = 15
+    DEFAULT_SEGMENT_DURATION_IN_MINUTES: Final[int] = 60
 
     @classmethod
     def split(cls, time_slot: TimeSlot, unit: "SegmentInMinutes") -> list[TimeSlot]:  # type: ignore # noqa: F821

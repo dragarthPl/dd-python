@@ -21,8 +21,12 @@ class TimeSlot:
 
     @classmethod
     def create_daily_time_slot_at_utc(cls, year: int, month: int, day: int) -> "TimeSlot":
+        return cls.create_time_slot_at_utc_of_duration(year, month, day, timedelta(days=1))
+
+    @classmethod
+    def create_time_slot_at_utc_of_duration(cls, year: int, month: int, day: int, duration: timedelta) -> "TimeSlot":
         since = datetime(year, month, day).replace(tzinfo=pytz.utc)
-        return cls(since, since + relativedelta(days=1))
+        return cls(since, since + duration)
 
     @classmethod
     def create_monthly_time_slot_at_utc(cls, year: int, month: int) -> "TimeSlot":

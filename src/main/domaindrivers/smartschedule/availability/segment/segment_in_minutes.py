@@ -7,12 +7,18 @@ class SegmentInMinutes:
     value: int
 
     @classmethod
-    def of(cls, minutes: int) -> "SegmentInMinutes":
+    def of_duration(cls, minutes: int, slot_duration_in_minutes: int) -> "SegmentInMinutes":
         if minutes <= 0:
             raise ValueError("SegmentInMinutesDuration must be positive")
-        if minutes % Segments.DEFAULT_SEGMENT_DURATION_IN_MINUTES != 0:
-            raise ValueError("SegmentInMinutesDuration must be a multiple of 15")
+        if minutes < slot_duration_in_minutes:
+            raise ValueError(f"SegmentInMinutesDuration must be at least {slot_duration_in_minutes} minutes")
+        if minutes % slot_duration_in_minutes != 0:
+            raise ValueError(f"SegmentInMinutesDuration must be a multiple of {slot_duration_in_minutes} minutes")
         return SegmentInMinutes(minutes)
+
+    @classmethod
+    def of(cls, minutes: int) -> "SegmentInMinutes":
+        return cls.of_duration(minutes, Segments.DEFAULT_SEGMENT_DURATION_IN_MINUTES)
 
     @classmethod
     def default_segment(cls) -> "SegmentInMinutes":
